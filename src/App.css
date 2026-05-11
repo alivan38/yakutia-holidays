@@ -436,14 +436,14 @@ section h2 {
 
 
 .bg-layer-1 {
-  background-image: url('/yakutia-holidays/src/images/snake-pattern.svg');
+  background-image: url('/yakutia-holidays/public/images/snake-pattern.svg');
   opacity: 0.25;
   animation: snake1 12s ease-in-out infinite;
 }
 
 
 .bg-layer-2 {
-  background-image: url('/yakutia-holidays/src/images/snake-pattern1.svg');
+  background-image: url('/yakutia-holidays/public/images/snake-pattern1.svg');
   opacity: 0.2;
   animation: snake2 15s ease-in-out infinite;
 }
