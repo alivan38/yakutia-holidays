@@ -22,9 +22,12 @@ a { text-decoration: none; color: inherit; }
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s ease;;
 }
-.btn:hover { background: #15436f; }
+.btn:hover {
+  background: #15436f;
+  transform: scale(1.05);
+}
 .small-btn { padding: 0.4rem 1rem; font-size: 0.85rem; }
 
 /* ===== Hero ===== */
@@ -204,11 +207,12 @@ section h2 {
 .holiday-preview-content { padding: 1rem; }
 .holiday-preview-content h3 { margin-bottom: 0.5rem; color: #0a2f44; }
 
-/* ===== Ближайший праздник ===== */
+
 .upcoming-section {
   background: #eaf1f8;
   border-radius: 12px;
   padding: 3rem 2rem;
+  margin-bottom: 1rem;
 }
 .upcoming-card {
   display: flex;
@@ -250,7 +254,9 @@ section h2 {
   border-radius: 12px;
   text-align: center;
   padding: 3rem 2rem;
+  margin-top: 2rem;
 }
+
 .contribute-section p {
   max-width: 600px;
   margin: 1rem auto 2rem;
@@ -357,11 +363,11 @@ section h2 {
   color: #0a2f44;
 }
 
-/* ===== Календарь ===== */
+
 .calendar-page { padding: 0 1.5rem; }
 .main-title { text-align: center; margin: 1.5rem 0; }
 
-/* ===== Карточки праздников (для PeoplePage) ===== */
+
 .holidays-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -392,7 +398,7 @@ section h2 {
 .holiday-card-content { padding: 1rem; }
 .holiday-card-content h3 { color: #0a2f44; }
 
-/* ===== Интерактивное пятно (глобальное) ===== */
+
 .home-page {
   padding-top: 1.5rem;
 }
@@ -416,7 +422,7 @@ section h2 {
 
 
 
-/* ===== Анимированные фоновые узоры ===== */
+
 .bg-layer {
   position: fixed;
   top: 0;
@@ -428,21 +434,21 @@ section h2 {
   z-index: -2;
 }
 
-/* Первый слой – мелкий росток */
+
 .bg-layer-1 {
-  background-image: url('src/images/snake-pattern.svg');
+  background-image: url('/yakutia-holidays/src/images/snake-pattern.svg');
   opacity: 0.25;
   animation: snake1 12s ease-in-out infinite;
 }
 
-/* Второй слой – крупный лист */
+
 .bg-layer-2 {
-  background-image: url('src/images/snake-pattern1.svg');
+  background-image: url('/yakutia-holidays/src/images/snake-pattern1.svg');
   opacity: 0.2;
   animation: snake2 15s ease-in-out infinite;
 }
 
-/* Волна для первого слоя – движение влево */
+
 @keyframes snake1 {
   0%   { background-position: 0 0; }
   25%  { background-position: -40px 10px; }
@@ -451,7 +457,7 @@ section h2 {
   100% { background-position: 0 0; }
 }
 
-/* Волна для второго слоя – движение вправо */
+
 @keyframes snake2 {
   0%   { background-position: 0 0; }
   30%  { background-position: 50px -5px; }
@@ -459,7 +465,7 @@ section h2 {
   100% { background-position: 0 0; }
 }
 
-/* Затемнение центра для фоновых узоров */
+
 .bg-fade {
   position: fixed;
   top: 0;
@@ -468,15 +474,19 @@ section h2 {
   height: 100%;
   background: radial-gradient(
     ellipse at center,
-    rgba(255, 255, 255, 30) 0%,   /* белая вуаль в центре */
-    rgba(255, 255, 255, 0.56) 67%       /* прозрачность к краям */
+    rgba(255, 255, 255, 30) 0%,
+    rgba(255, 255, 255, 0.56) 67%
   );
   pointer-events: none;
-  z-index: -1.5;                     /* между узорами (-2) и пятном (-1) */
+  z-index: -1.5;
 }
 
 
 #root {
   position: relative;
   z-index: 1;
+}
+
+.holidays-section {
+  padding-bottom: 0.8rem;
 }

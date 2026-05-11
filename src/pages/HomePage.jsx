@@ -217,6 +217,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <div className="section-divider"></div>
+
       {/* Ближайший праздник */}
       {upcoming && (
         <section className="upcoming-section">
