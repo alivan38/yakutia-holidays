@@ -4,5 +4,5 @@ meta:
     name: npm
     version: 18
 run:
-  scriptName: server/index.js
+  scriptName: index.js          # просто index.js, так как корень – папка server
   containerPort: 5000
