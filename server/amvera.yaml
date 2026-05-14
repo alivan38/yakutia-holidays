@@ -1,18 +1,8 @@
 meta:
-  environment: nodejs
+  environment: node
   toolchain:
     name: npm
-    version: "18"
-build:
-  skip: false
-  additionalCommands: node index.js
-  artifacts:
-    "*": /
+    version: 18
 run:
-  persistenceMount: /data
-  scriptName: null
-  scriptArguments: null
-  nodeArguments: null
-  command: npm run start
+  scriptName: server/index.js
   containerPort: 5000
-  servicePort: 80
