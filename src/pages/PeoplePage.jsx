@@ -1,26 +1,39 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import holidaysExtended from "../data/holidaysExtended";
+import { fetchHolidays } from "../api/holidaysApi";
 
 function getColorByPeople(people) {
   const colors = {
-    "Якуты": "#1e5a96",
-    "Эвенки": "#0b3d5e",
-    "Эвены": "#2a6b8f",
-    "Юкагиры": "#3e7ba0",
-    "Долганы": "#165374",
-    "Чукчи": "#0f2e44",
+    "Якуты": "#C41E3A",
+    "Эвенки": "#FFD700",
+    "Эвены": "#87CEEB",
+    "Юкагиры": "#B71C1C",
+    "Долганы": "#CC7722",
+    "Чукчи": "#9E9E9E",
   };
-  return colors[people] || "#1e5a96";
+  return colors[people] || "#4A90E2";
 }
 
 function truncate(text, maxLength) {
-  return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  return text.length > maxLength ? text.slice(0, maxLength) + "…" : text;
 }
 
 export default function PeoplePage() {
   const { people } = useParams();
   const decodedPeople = decodeURIComponent(people);
-  const filtered = holidaysExtended.filter((h) => h.people === decodedPeople);
+  const [allHolidays, setAllHolidays] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchHolidays()
+      .then(setAllHolidays)
+      .catch(() => setAllHolidays([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = allHolidays.filter((h) => h.people === decodedPeople);
+
+  if (loading) return <div className="page">Загрузка...</div>;
 
   return (
     <div className="page">
@@ -32,17 +45,11 @@ export default function PeoplePage() {
         ) : (
           filtered.map((h) => (
             <Link to={`/holiday/${h.id}`} key={h.id} className="holiday-card">
-              <div className="holiday-card-image">
-                <img
-                  src={h.image}
-                  alt={h.title}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.parentElement.style.backgroundColor = getColorByPeople(h.people);
-                    e.target.parentElement.textContent = h.title[0];
-                  }}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+              <div
+                className="holiday-card-image"
+                style={{ backgroundColor: getColorByPeople(h.people) }}
+              >
+                {h.title[0]}
               </div>
               <div className="holiday-card-content">
                 <h3>{h.title}</h3>

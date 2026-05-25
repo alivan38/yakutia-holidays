@@ -1,6 +1,7 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import holidaysExtended from "../data/holidaysExtended";
+import { fetchApprovedProposals } from "../api/proposalsApi";
+import { fetchHolidays } from "../api/holidaysApi";
 
 const MONTH_NAMES = [
   "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
@@ -10,49 +11,45 @@ const PEOPLES = ["Якуты", "Эвенки", "Эвены", "Юкагиры", "
 
 function getColorByPeople(people) {
   const colors = {
-    "Якуты": "#1e5a96",
-    "Эвенки": "#0b3d5e",
-    "Эвены": "#2a6b8f",
-    "Юкагиры": "#3e7ba0",
-    "Долганы": "#165374",
-    "Чукчи": "#0f2e44",
+    "Якуты": "#C41E3A",
+    "Эвенки": "#FFD700",
+    "Эвены": "#87CEEB",
+    "Юкагиры": "#B71C1C",
+    "Долганы": "#CC7722",
+    "Чукчи": "#9E9E9E",
   };
-  return colors[people] || "#1e5a96";
+  return colors[people] || "#4A90E2";
 }
 
 function truncate(text, maxLength) {
-  return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  return text.length > maxLength ? text.slice(0, maxLength) + "…" : text;
 }
 
 function getUpcomingHoliday(holidays) {
   const today = new Date();
   const thisYear = today.getFullYear();
   const upcoming = holidays
+    .filter((h) => h.date)
     .flatMap((h) => {
-      const [_, month, day] = h.date.split("-");
-      const dateThisYear = new Date(`${thisYear}-${month}-${day}`);
-      const dateNextYear = new Date(`${thisYear + 1}-${month}-${day}`);
+      const [, month, day] = h.date.split("-");
       return [
-        { ...h, dateObj: dateThisYear },
-        { ...h, dateObj: dateNextYear },
+        { ...h, dateObj: new Date(`${thisYear}-${month}-${day}`) },
+        { ...h, dateObj: new Date(`${thisYear + 1}-${month}-${day}`) },
       ];
     })
     .filter((h) => h.dateObj >= today)
     .sort((a, b) => a.dateObj - b.dateObj);
-  return upcoming.length > 0 ? upcoming[0] : null;
+  return upcoming[0] || null;
 }
 
 function formatDateShort(dateObj) {
-  const day = String(dateObj.getDate()).padStart(2, "0");
-  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-  return `${day}.${month}`;
+  return `${String(dateObj.getDate()).padStart(2, "0")}.${String(dateObj.getMonth() + 1).padStart(2, "0")}`;
 }
 
 function daysUntil(dateObj) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const diff = dateObj.getTime() - today.getTime();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  return Math.ceil((dateObj - today) / 86400000);
 }
 
 export default function HomePage() {
@@ -61,44 +58,43 @@ export default function HomePage() {
   const [selectedMonth, setSelectedMonth] = useState("Все");
   const catalogRef = useRef(null);
 
-  // ===== Глобальное интерактивное пятно =====
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
+  const [holidays, setHolidays] = useState([]);
+  const [approvedProposals, setApprovedProposals] = useState([]);
 
-  const handleMouseEnter = () => setIsHovering(true);
-  const handleMouseMove = (e) => {
-    setMousePos({
-      x: e.clientX,
-      y: e.clientY,
-    });
-  };
-  const handleMouseLeave = () => setIsHovering(false);
-  // ==============================================
-
-  const allPeoples = useMemo(() => {
-    const peoples = holidaysExtended.map((h) => h.people);
-    return ["Все", ...new Set(peoples)];
+  useEffect(() => {
+    fetchHolidays().then(setHolidays).catch(() => setHolidays([]));
+    fetchApprovedProposals().then(setApprovedProposals).catch(() => setApprovedProposals([]));
   }, []);
 
+  const allHolidays = useMemo(() => {
+    const mapped = approvedProposals.map((p) => ({
+      id: `proposal-${p.id}`,
+      title: p.title,
+      people: p.people,
+      description: p.description,
+      fullDescription: p.description,
+      date: "",
+      tags: [],
+      image: [],
+      isProposal: true,
+    }));
+    return [...holidays, ...mapped];
+  }, [holidays, approvedProposals]);
+
+  const allPeoples = useMemo(() => ["Все", ...new Set(allHolidays.map((h) => h.people))], [allHolidays]);
+
   const filteredHolidays = useMemo(() => {
-    return holidaysExtended.filter((h) => {
-      const matchSearch =
-        h.title.toLowerCase().includes(search.toLowerCase()) ||
-        h.description.toLowerCase().includes(search.toLowerCase());
-      const matchPeople =
-        selectedPeople === "Все" || h.people === selectedPeople;
+    return allHolidays.filter((h) => {
+      const matchSearch = h.title.toLowerCase().includes(search.toLowerCase()) || h.description.toLowerCase().includes(search.toLowerCase());
+      const matchPeople = selectedPeople === "Все" || h.people === selectedPeople;
+      if (!h.date) return matchSearch && matchPeople;
       const holidayMonth = h.date.split("-")[1];
-      const monthIndex = parseInt(holidayMonth, 10) - 1;
-      const matchMonth =
-        selectedMonth === "Все" || MONTH_NAMES[monthIndex] === selectedMonth;
+      const matchMonth = selectedMonth === "Все" || MONTH_NAMES[parseInt(holidayMonth, 10) - 1] === selectedMonth;
       return matchSearch && matchPeople && matchMonth;
     });
-  }, [search, selectedPeople, selectedMonth]);
+  }, [search, selectedPeople, selectedMonth, allHolidays]);
 
-  const upcoming = useMemo(
-    () => getUpcomingHoliday(holidaysExtended),
-    []
-  );
+  const upcoming = useMemo(() => getUpcomingHoliday(holidays), [holidays]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -106,22 +102,13 @@ export default function HomePage() {
   };
 
   return (
-    <div
-      className="home-page"
-      onMouseEnter={handleMouseEnter}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-
-
+    <div className="home-page">
+      {/* Hero */}
       <section className="hero">
+        <div className="hero-bg"></div>
         <div className="hero-overlay">
-          <h1>Праздники и обряды северных народов Республики Саха (Якутия)</h1>
-          <p>
-            Добро пожаловать в мир древних традиций, обрядов и праздников,
-            бережно хранимых народами Севера на суровой и прекрасной земле
-            Якутии.
-          </p>
+          <h1>Праздники и обряды коренных народов Якутии</h1>
+          <p>Откройте для себя древние традиции, обряды и праздники, бережно хранимые народами Севера.</p>
           <form onSubmit={handleSearchSubmit} className="hero-search">
             <input
               type="text"
@@ -130,165 +117,98 @@ export default function HomePage() {
               onChange={(e) => setSearch(e.target.value)}
               className="hero-search-input"
             />
-            <button type="submit" className="btn hero-search-btn">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 56 56"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M43.5797 45.7492L30.2447 32.4118C24.3126 36.6293 16.1384 35.5977 11.4401 30.0387C6.74176 24.4797 7.08674 16.2479 12.2337 11.1015C17.3793 5.95289 25.6119 5.60642 31.1719 10.3045C36.732 15.0026 37.7641 23.1776 33.5464 29.1102L46.8814 42.4475L43.582 45.7469L43.5797 45.7492ZM22.1317 11.6662C17.707 11.6652 13.8896 14.7711 12.9908 19.1035C12.092 23.436 14.3587 27.8042 18.4186 29.5634C22.4785 31.3227 27.2158 29.9895 29.7623 26.371C32.3087 22.7525 31.9645 17.8433 28.938 14.6155L30.3497 16.0155L28.7584 14.4289L28.7304 14.4009C26.9845 12.6443 24.6083 11.6595 22.1317 11.6662Z"
-                  fill="currentColor"
-                />
+            <button type="submit" className="hero-search-btn">
+              <svg width="20" height="20" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M43.5797 45.7492L30.2447 32.4118C24.3126 36.6293 16.1384 35.5977 11.4401 30.0387C6.74176 24.4797 7.08674 16.2479 12.2337 11.1015C17.3793 5.95289 25.6119 5.60642 31.1719 10.3045C36.732 15.0026 37.7641 23.1776 33.5464 29.1102L46.8814 42.4475L43.582 45.7469L43.5797 45.7492ZM22.1317 11.6662C17.707 11.6652 13.8896 14.7711 12.9908 19.1035C12.092 23.436 14.3587 27.8042 18.4186 29.5634C22.4785 31.3227 27.2158 29.9895 29.7623 26.371C32.3087 22.7525 31.9645 17.8433 28.938 14.6155L30.3497 16.0155L28.7584 14.4289L28.7304 14.4009C26.9845 12.6443 24.6083 11.6595 22.1317 11.6662Z" fill="currentColor"/>
               </svg>
+              Найти
             </button>
           </form>
         </div>
       </section>
 
-      <hr className="section-divider" />
-
+      {/* Народы */}
       <section className="peoples-section">
-        <h2>НАРОДЫ СЕВЕРА ЯКУТИИ</h2>
+        <h2>Коренные народы Якутии</h2>
         <div className="peoples-grid">
           {PEOPLES.map((name) => (
-            <Link
-              key={name}
-              to={`/people/${encodeURIComponent(name)}`}
-              className="people-card"
-            >
+            <Link key={name} to={`/people/${encodeURIComponent(name)}`} className="people-chip">
               {name}
             </Link>
           ))}
         </div>
       </section>
 
-      {/* Каталог праздников */}
+      {/* Каталог */}
       <section className="holidays-section" ref={catalogRef}>
-        <h2>ПРАЗДНИКИ И ОБРЯДЫ</h2>
+        <h2>Праздники и обряды</h2>
         <div className="filters">
-          <select
-            value={selectedPeople}
-            onChange={(e) => setSelectedPeople(e.target.value)}
-          >
-            {allPeoples.map((people) => (
-              <option key={people} value={people}>
-                {people}
-              </option>
-            ))}
+          <select value={selectedPeople} onChange={(e) => setSelectedPeople(e.target.value)}>
+            {allPeoples.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-          >
+          <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
             <option value="Все">Все месяцы</option>
-            {MONTH_NAMES.map((month) => (
-              <option key={month} value={month}>
-                {month}
-              </option>
-            ))}
+            {MONTH_NAMES.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
         <div className="holidays-preview-grid">
           {filteredHolidays.length > 0 ? (
             filteredHolidays.map((h) => (
-              <Link
-                to={`/holiday/${h.id}`}
-                key={h.id}
-                className="holiday-preview-card"
-              >
-                <div
-                  className="holiday-preview-img"
-                  style={{ backgroundColor: getColorByPeople(h.people) }}
-                >
-                  {h.title[0]}
+              <Link to={`/holiday/${h.id}`} key={h.id} className="holiday-card">
+                <div className="holiday-card-media" style={{ backgroundColor: getColorByPeople(h.people) }}>
+                  <span className="holiday-card-icon">{h.title[0]}</span>
                 </div>
-                <div className="holiday-preview-content">
+                <div className="holiday-card-body">
                   <h3>{h.title}</h3>
-                  <p>{truncate(h.description, 100)}</p>
+                  <p className="holiday-card-people">{h.people}</p>
+                  <p className="holiday-card-desc">{truncate(h.description, 90)}</p>
+                  {h.isProposal && <span className="proposal-dot" title="Недавно добавлен"></span>}
                 </div>
               </Link>
             ))
           ) : (
-            <p className="no-results">Праздники не найдены</p>
+            <p className="no-results">Ничего не найдено</p>
           )}
         </div>
       </section>
 
-      <div className="section-divider"></div>
-
       {/* Ближайший праздник */}
       {upcoming && (
         <section className="upcoming-section">
-          <h2>БЛИЖАЙШИЙ ПРАЗДНИК</h2>
           <div className="upcoming-card">
-            <div
-              className="upcoming-img"
-              style={{ backgroundColor: getColorByPeople(upcoming.people) }}
-            >
+            <div className="upcoming-icon-block" style={{ backgroundColor: getColorByPeople(upcoming.people) }}>
               <span className="upcoming-icon">{upcoming.title[0]}</span>
             </div>
             <div className="upcoming-details">
               <h3>{upcoming.title}</h3>
               <p className="upcoming-people">{upcoming.people}</p>
-              <p className="upcoming-date">
-                {formatDateShort(upcoming.dateObj)}{" "}
-                {upcoming.dateObj.getFullYear()}
-              </p>
-              <p className="upcoming-description">
-                {truncate(upcoming.description, 120)}
-              </p>
+              <p className="upcoming-date">{formatDateShort(upcoming.dateObj)} {upcoming.dateObj.getFullYear()}</p>
+              <p className="upcoming-description">{truncate(upcoming.description, 120)}</p>
               <div className="upcoming-countdown">
-                {daysUntil(upcoming.dateObj) === 0
-                  ? "Сегодня!"
-                  : `Через ${daysUntil(upcoming.dateObj)} дней`}
+                {daysUntil(upcoming.dateObj) === 0 ? "Сегодня!" : `Через ${daysUntil(upcoming.dateObj)} дн.`}
               </div>
-              <Link
-                to={`/holiday/${upcoming.id}`}
-                className="btn"
-              >
-                ПОДРОБНЕЕ →
-              </Link>
+              <Link to={`/holiday/${upcoming.id}`} className="btn">Подробнее →</Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* Помощь в наполнении */}
+      {/* Помощь */}
       <section className="contribute-section">
-        <h2>ЗНАЕТЕ НЕИЗВЕСТНЫЙ ПРАЗДНИК?</h2>
-        <p>
-          Помогите нам сохранить культурное наследие – расскажите о праздниках и обрядах,
-          которые ещё не описаны на нашем сайте.
-        </p>
-        <Link to="/contribute" className="btn">
-          ДОБАВИТЬ ДАННЫЕ →
-        </Link>
+        <div className="contribute-content">
+          <h2>Знаете неизвестный праздник?</h2>
+          <p>Помогите сохранить культурное наследие — расскажите о праздниках и обрядах, которые ещё не описаны на нашем сайте.</p>
+          <Link to="/contribute" className="btn btn-accent">Добавить данные →</Link>
+        </div>
       </section>
 
       {/* Footer */}
       <footer className="site-footer">
         <div className="footer-content">
-          <h3>СЕВЕРНЫЕ ТРАДИЦИИ ЯКУТИИ</h3>
-          <p>
-            Сохранение и развитие культурного наследия северных народов
-            Республики Саха (Якутия).
-          </p>
-          <p className="copyright">&copy; 2024 Северные традиции Якутии</p>
+          <p>677000, Республика Саха (Якутия), г. Якутск, ул. Орджоникидзе, д. 4</p>
+          <p className="copyright">© 2026 ФГБОУ ВО «Арктический государственный институт искусств и культуры»</p>
         </div>
       </footer>
-
-      {/* Глобальное световое пятно */}
-      <div
-        className="mouse-glow"
-        style={{
-          left: mousePos.x,
-          top: mousePos.y,
-          opacity: isHovering ? 1 : 0,
-        }}
-      />
     </div>
   );
 }

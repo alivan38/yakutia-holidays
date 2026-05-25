@@ -5,6 +5,7 @@ import CalendarPage from "./pages/CalendarPage";
 import ContributePage from "./pages/ContributePage";
 import PeoplePage from "./pages/PeoplePage";
 import "./App.css";
+import AdminPage from './pages/AdminPage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/people/:people" element={<PeoplePage />} />
         <Route path="/contribute" element={<ContributePage />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </HashRouter>
   );

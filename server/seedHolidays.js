@@ -1,4 +1,6 @@
-const holidaysExtended = [
+const pool = require('./db');
+
+const holidaysData = [
   // ------------------- Якуты -------------------
   {
     id: "ysyakh",
@@ -162,4 +164,35 @@ const holidaysExtended = [
   },
 ];
 
-export default holidaysExtended;
+async function seed() {
+  try {
+    for (const h of holidaysData) {
+      await pool.query(
+        `INSERT INTO holidays (id, title, subtitle, date, people, description, full_description, tags, image, region, source, approved)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          h.id,
+          h.title,
+          h.subtitle,
+          h.date,
+          h.people,
+          h.description,
+          h.fullDescription,
+          h.tags,
+          h.image,
+          h.region,
+          h.source,
+          true,
+        ]
+      );
+    }
+    console.log('База успешно заполнена праздниками');
+  } catch (err) {
+    console.error('Ошибка при заполнении базы:', err);
+  } finally {
+    process.exit();
+  }
+}
+
+seed();
