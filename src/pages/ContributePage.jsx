@@ -4,62 +4,145 @@ import { Link } from 'react-router-dom';
 const API_URL = 'http://localhost:5000/api/proposals';
 const PEOPLES = ['Якуты', 'Эвенки', 'Эвены', 'Юкагиры', 'Долганы', 'Чукчи', 'Другое'];
 
+const MONTHS = [
+  { value: 1,  label: 'Январь',   days: 31 },
+  { value: 2,  label: 'Февраль',  days: 29 },
+  { value: 3,  label: 'Март',      days: 31 },
+  { value: 4,  label: 'Апрель',     days: 30 },
+  { value: 5,  label: 'Май',       days: 31 },
+  { value: 6,  label: 'Июнь',      days: 30 },
+  { value: 7,  label: 'Июль',      days: 31 },
+  { value: 8,  label: 'Август',     days: 31 },
+  { value: 9,  label: 'Сентябрь',  days: 30 },
+  { value: 10, label: 'Октябрь',   days: 31 },
+  { value: 11, label: 'Ноябрь',    days: 30 },
+  { value: 12, label: 'Декабрь',   days: 31 },
+];
+
+// Удобный пикер «Месяц + День»
+// value/onChange работают с форматом "2000-MM-DD" —
+// год 2000 нейтральный (праздники не привязаны к году)
+function MonthDayPicker({ value, onChange }) {
+  const parse = (v) => {
+    if (!v) return { month: '', day: '' };
+    const parts = v.split('-');
+    return { month: parseInt(parts[1], 10), day: parseInt(parts[2], 10) };
+  };
+
+  const { month: initMonth, day: initDay } = parse(value);
+  const [month, setMonth] = useState(initMonth || '');
+  const [day,   setDay]   = useState(initDay   || '');
+
+  const maxDays = month ? (MONTHS.find(m => m.value === Number(month))?.days ?? 31) : 31;
+  const days    = Array.from({ length: maxDays }, (_, i) => i + 1);
+
+  const handleMonth = (e) => {
+    const m = e.target.value;
+    setMonth(m);
+    // сбросить день если он выходит за пределы нового месяца
+    const newMax = MONTHS.find(mo => mo.value === Number(m))?.days ?? 31;
+    const safeDay = day && Number(day) <= newMax ? day : '';
+    setDay(safeDay);
+    emit(m, safeDay);
+  };
+
+  const handleDay = (e) => {
+    const d = e.target.value;
+    setDay(d);
+    emit(month, d);
+  };
+
+  const emit = (m, d) => {
+    if (m && d) {
+      const mm = String(m).padStart(2, '0');
+      const dd = String(d).padStart(2, '0');
+      onChange(`2000-${mm}-${dd}`);
+    } else {
+      onChange('');
+    }
+  };
+
+  return (
+    <div className="month-day-picker">
+      <div className="month-day-picker__field">
+        <label className="month-day-picker__sublabel">Месяц</label>
+        <select
+          className="month-day-picker__select"
+          value={month}
+          onChange={handleMonth}
+        >
+          <option value="">— выберите —</option>
+          {MONTHS.map(m => (
+            <option key={m.value} value={m.value}>{m.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="month-day-picker__divider">/</div>
+
+      <div className="month-day-picker__field month-day-picker__field--day">
+        <label className="month-day-picker__sublabel">День</label>
+        <select
+          className="month-day-picker__select"
+          value={day}
+          onChange={handleDay}
+          disabled={!month}
+        >
+          <option value="">—</option>
+          {days.map(d => (
+            <option key={d} value={d}>{d}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}
+
 export default function ContributePage() {
-  const [title, setTitle] = useState('');
-  const [people, setPeople] = useState(PEOPLES[0]);
-  const [date, setDate] = useState('');
+  const [title,       setTitle]       = useState('');
+  const [people,      setPeople]      = useState(PEOPLES[0]);
+  const [date,        setDate]        = useState('');
   const [description, setDescription] = useState('');
-  const [region, setRegion] = useState('');
-  const [files, setFiles] = useState([]);
-  const [previews, setPreviews] = useState([]);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
+  const [region,      setRegion]      = useState('');
+  const [files,       setFiles]       = useState([]);
+  const [previews,    setPreviews]    = useState([]);
+  const [submitted,   setSubmitted]   = useState(false);
+  const [error,       setError]       = useState('');
 
   useEffect(() => {
-    return () => {
-      previews.forEach(url => URL.revokeObjectURL(url));
-    };
+    return () => { previews.forEach(url => URL.revokeObjectURL(url)); };
   }, [previews]);
 
   const handleFiles = (e) => {
     const selected = Array.from(e.target.files);
-    if (files.length + selected.length > 5) {
-      setError('Максимум 5 изображений');
-      return;
-    }
-    const newPreviews = selected.map(file => URL.createObjectURL(file));
+    if (files.length + selected.length > 5) { setError('Максимум 5 изображений'); return; }
+    const newPreviews = selected.map(f => URL.createObjectURL(f));
     setFiles([...files, ...selected]);
     setPreviews([...previews, ...newPreviews]);
     setError('');
   };
 
-  const removeFile = (index) => {
-    URL.revokeObjectURL(previews[index]);
-    setFiles(files.filter((_, i) => i !== index));
-    setPreviews(previews.filter((_, i) => i !== index));
+  const removeFile = (i) => {
+    URL.revokeObjectURL(previews[i]);
+    setFiles(files.filter((_, idx) => idx !== i));
+    setPreviews(previews.filter((_, idx) => idx !== i));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     const formData = new FormData();
-    formData.append('title', title);
-    formData.append('people', people);
-    formData.append('date', date);
+    formData.append('title',       title);
+    formData.append('people',      people);
+    formData.append('date',        date);
     formData.append('description', description);
-    formData.append('region', region);
-    files.forEach(file => formData.append('images', file));
-
+    formData.append('region',      region);
+    files.forEach(f => formData.append('images', f));
     try {
       const res = await fetch(API_URL, { method: 'POST', body: formData });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Ошибка отправки');
-      }
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Ошибка отправки'); }
       setSubmitted(true);
-    } catch (err) {
-      setError(err.message);
-    }
+    } catch (err) { setError(err.message); }
   };
 
   if (submitted) {
@@ -80,45 +163,47 @@ export default function ContributePage() {
       <h1>Предложить новый праздник или обряд</h1>
       {error && <p className="auth-error">{error}</p>}
       <form onSubmit={handleSubmit} className="contribute-form">
+
         <div className="form-group">
           <label>Название праздника *</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} required />
         </div>
+
         <div className="form-group">
           <label>Народ *</label>
-          <select value={people} onChange={(e) => setPeople(e.target.value)} required>
-            {PEOPLES.map((p) => <option key={p} value={p}>{p}</option>)}
+          <select value={people} onChange={e => setPeople(e.target.value)} required>
+            {PEOPLES.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
+
         <div className="form-group">
           <label>Дата празднования</label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            placeholder="дд.мм.гггг"
-          />
+          <MonthDayPicker value={date} onChange={setDate} />
         </div>
+
         <div className="form-group">
           <label>Описание, обряды, история *</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} required rows={5} />
+          <textarea value={description} onChange={e => setDescription(e.target.value)} required rows={5} />
         </div>
+
         <div className="form-group">
           <label>Регион</label>
-          <input type="text" value={region} onChange={(e) => setRegion(e.target.value)} />
+          <input type="text" value={region} onChange={e => setRegion(e.target.value)} />
         </div>
+
         <div className="form-group">
           <label>Фотографии (до 5 шт.)</label>
           <input type="file" accept="image/*" multiple onChange={handleFiles} className="file-input" />
           <div className="file-preview-container">
             {previews.map((src, idx) => (
               <div key={idx} className="file-preview-item">
-                <img src={src} alt={`Превью ${idx+1}`} />
+                <img src={src} alt={`Превью ${idx + 1}`} />
                 <button type="button" className="remove-file-btn" onClick={() => removeFile(idx)}>×</button>
               </div>
             ))}
           </div>
         </div>
+
         <button type="submit" className="btn" style={{ width: '100%' }}>ОТПРАВИТЬ ДАННЫЕ</button>
       </form>
     </div>
