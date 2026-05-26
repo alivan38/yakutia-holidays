@@ -128,7 +128,6 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.5rem); }
     background   var(--duration) var(--ease);
 }
 
-/* Тень при скролле */
 .navbar--scrolled {
   border-color: var(--border);
   box-shadow: 0 2px 16px rgba(30,58,47,0.08);
@@ -259,13 +258,12 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.5rem); }
   width: 100%;
 }
 
-/* Анимация в крестик */
 .burger-line--1-open { transform: translateY(7px) rotate(45deg); }
 .burger-line--2-open { opacity: 0; transform: scaleX(0); }
 .burger-line--3-open { transform: translateY(-7px) rotate(-45deg); }
 
 /* ============================================================
-   МОБИЛЬНОЕ МЕНЮ — выдвижная панель снизу/сбоку
+   МОБИЛЬНОЕ МЕНЮ
    ============================================================ */
 .mobile-menu {
   position: fixed;
@@ -327,7 +325,6 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.5rem); }
   flex-shrink: 0;
 }
 
-/* Затемнение фона при открытом меню */
 .mobile-menu-overlay {
   position: fixed;
   inset: 0;
@@ -443,15 +440,51 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.5rem); }
   letter-spacing: -0.02em;
 }
 
-.hero p {
-  font-size: clamp(1rem, 2vw, 1.2rem);
+/* --- Hero subtitle: статика + typewriter --- */
+.hero-subtitle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
   margin-bottom: 2.5rem;
-  opacity: 0.85;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.7;
   font-family: var(--font-body);
+  line-height: 1.7;
+}
+
+.hero-subtitle-static {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  opacity: 0.85;
+  color: white;
+}
+
+.typewriter-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Фиксированная высота строки — не скачет при смене слова */
+  min-height: 2rem;
+}
+
+.typewriter-word {
+  font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+  font-weight: 700;
+  color: #FFD700;
+  letter-spacing: 0.01em;
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  margin-left: 3px;
+  font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+  font-weight: 300;
+  color: #FFD700;
+  animation: blink 0.75s step-end infinite;
+  line-height: 1;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 
 /* --- Поиск --- */

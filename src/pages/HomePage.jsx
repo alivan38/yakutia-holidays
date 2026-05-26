@@ -62,7 +62,6 @@ function useTypewriter(words, { typingSpeed = 100, deletingSpeed = 60, pauseAfte
 
   useEffect(() => {
     const current = words[wordIndex % words.length];
-
     let timeout;
     if (!isDeleting) {
       if (displayed.length < current.length) {
@@ -78,7 +77,6 @@ function useTypewriter(words, { typingSpeed = 100, deletingSpeed = 60, pauseAfte
         setWordIndex((i) => (i + 1) % words.length);
       }
     }
-
     return () => clearTimeout(timeout);
   }, [displayed, isDeleting, wordIndex, words, typingSpeed, deletingSpeed, pauseAfterWord]);
 
@@ -143,13 +141,16 @@ export default function HomePage() {
         <div className="hero-bg"></div>
         <div className="hero-overlay">
           <h1>Праздники и обряды коренных народов Якутии</h1>
-          <p>
-            Откройте для себя{" "}
-            <span className="typewriter-word">
-              {typedWord}
+
+          {/* Статичная строка + анимированное слово на отдельной строке */}
+          <div className="hero-subtitle">
+            <span className="hero-subtitle-static">Откройте для себя</span>
+            <span className="typewriter-line">
+              <span className="typewriter-word">{typedWord}</span>
               <span className="typewriter-cursor" aria-hidden="true">|</span>
             </span>
-          </p>
+          </div>
+
           <form onSubmit={handleSearchSubmit} className="hero-search">
             <input
               type="text"
