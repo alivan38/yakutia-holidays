@@ -474,17 +474,18 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.5rem); }
 
 .typewriter-cursor {
   display: inline-block;
-  margin-left: 3px;
-  font-size: clamp(1.15rem, 2.5vw, 1.45rem);
-  font-weight: 300;
-  color: #FFD700;
-  animation: blink 0.75s step-end infinite;
-  line-height: 1;
+  margin-left: 2px;
+  width: 2px;
+  height: 1.2em;
+  background: #FFD700;
+  border-radius: 1px;
+  vertical-align: text-bottom;
+  animation: cursorBlink 1.1s ease-in-out infinite;
 }
 
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
+@keyframes cursorBlink {
+  0%,  45% { opacity: 1; }
+  55%, 100% { opacity: 0; }
 }
 
 /* --- Поиск --- */

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { fetchApprovedProposals } from "../api/proposalsApi";
 import { fetchHolidays } from "../api/holidaysApi";
@@ -55,30 +55,56 @@ function daysUntil(dateObj) {
 }
 
 /* ===== Хук: эффект печатания ===== */
-function useTypewriter(words, { typingSpeed = 100, deletingSpeed = 60, pauseAfterWord = 1400 } = {}) {
+function useTypewriter(
+  words,
+  { typingSpeed = 90, deletingSpeed = 45, pauseAfterWord = 1800, pauseBeforeType = 300 } = {}
+) {
   const [displayed, setDisplayed] = useState("");
   const [wordIndex, setWordIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [phase, setPhase] = useState("typing"); // "typing" | "pausing" | "deleting" | "waiting"
+
+  // Небольшая случайность для органичности (+/- 20% от базовой скорости)
+  const jitter = useCallback(
+    (base) => base + Math.random() * base * 0.4 - base * 0.2,
+    []
+  );
 
   useEffect(() => {
     const current = words[wordIndex % words.length];
     let timeout;
-    if (!isDeleting) {
+
+    if (phase === "typing") {
       if (displayed.length < current.length) {
-        timeout = setTimeout(() => setDisplayed(current.slice(0, displayed.length + 1)), typingSpeed);
+        timeout = setTimeout(
+          () => setDisplayed(current.slice(0, displayed.length + 1)),
+          jitter(typingSpeed)
+        );
       } else {
-        timeout = setTimeout(() => setIsDeleting(true), pauseAfterWord);
+        // Слово полностью напечатано → пауза
+        timeout = setTimeout(() => setPhase("pausing"), pauseAfterWord);
       }
-    } else {
+    } else if (phase === "pausing") {
+      // После паузы — начинаем удалять
+      setPhase("deleting");
+    } else if (phase === "deleting") {
       if (displayed.length > 0) {
-        timeout = setTimeout(() => setDisplayed(current.slice(0, displayed.length - 1)), deletingSpeed);
+        timeout = setTimeout(
+          () => setDisplayed(current.slice(0, displayed.length - 1)),
+          jitter(deletingSpeed)
+        );
       } else {
-        setIsDeleting(false);
-        setWordIndex((i) => (i + 1) % words.length);
+        // Слово полностью удалено → пауза перед следующим
+        setPhase("waiting");
       }
+    } else if (phase === "waiting") {
+      timeout = setTimeout(() => {
+        setWordIndex((i) => (i + 1) % words.length);
+        setPhase("typing");
+      }, pauseBeforeType);
     }
+
     return () => clearTimeout(timeout);
-  }, [displayed, isDeleting, wordIndex, words, typingSpeed, deletingSpeed, pauseAfterWord]);
+  }, [displayed, phase, wordIndex, words, typingSpeed, deletingSpeed, pauseAfterWord, pauseBeforeType, jitter]);
 
   return displayed;
 }
@@ -147,7 +173,7 @@ export default function HomePage() {
             <span className="hero-subtitle-static">Откройте для себя</span>
             <span className="typewriter-line">
               <span className="typewriter-word">{typedWord}</span>
-              <span className="typewriter-cursor" aria-hidden="true">|</span>
+              <span className="typewriter-cursor" aria-hidden="true"></span>
             </span>
           </div>
 
