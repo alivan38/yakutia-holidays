@@ -9,6 +9,8 @@ const MONTH_NAMES = [
 ];
 const PEOPLES = ["Якуты", "Эвенки", "Эвены", "Юкагиры", "Долганы", "Чукчи"];
 
+const TYPEWRITER_WORDS = ["традиции", "обряды", "праздники"];
+
 function getColorByPeople(people) {
   const colors = {
     "Якуты": "#C41E3A",
@@ -52,6 +54,37 @@ function daysUntil(dateObj) {
   return Math.ceil((dateObj - today) / 86400000);
 }
 
+/* ===== Хук: эффект печатания ===== */
+function useTypewriter(words, { typingSpeed = 100, deletingSpeed = 60, pauseAfterWord = 1400 } = {}) {
+  const [displayed, setDisplayed] = useState("");
+  const [wordIndex, setWordIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const current = words[wordIndex % words.length];
+
+    let timeout;
+    if (!isDeleting) {
+      if (displayed.length < current.length) {
+        timeout = setTimeout(() => setDisplayed(current.slice(0, displayed.length + 1)), typingSpeed);
+      } else {
+        timeout = setTimeout(() => setIsDeleting(true), pauseAfterWord);
+      }
+    } else {
+      if (displayed.length > 0) {
+        timeout = setTimeout(() => setDisplayed(current.slice(0, displayed.length - 1)), deletingSpeed);
+      } else {
+        setIsDeleting(false);
+        setWordIndex((i) => (i + 1) % words.length);
+      }
+    }
+
+    return () => clearTimeout(timeout);
+  }, [displayed, isDeleting, wordIndex, words, typingSpeed, deletingSpeed, pauseAfterWord]);
+
+  return displayed;
+}
+
 export default function HomePage() {
   const [search, setSearch] = useState("");
   const [selectedPeople, setSelectedPeople] = useState("Все");
@@ -60,6 +93,8 @@ export default function HomePage() {
 
   const [holidays, setHolidays] = useState([]);
   const [approvedProposals, setApprovedProposals] = useState([]);
+
+  const typedWord = useTypewriter(TYPEWRITER_WORDS);
 
   useEffect(() => {
     fetchHolidays().then(setHolidays).catch(() => setHolidays([]));
@@ -108,7 +143,13 @@ export default function HomePage() {
         <div className="hero-bg"></div>
         <div className="hero-overlay">
           <h1>Праздники и обряды коренных народов Якутии</h1>
-          <p>Откройте для себя древние традиции, обряды и праздники, бережно хранимые народами Севера.</p>
+          <p>
+            Откройте для себя{" "}
+            <span className="typewriter-word">
+              {typedWord}
+              <span className="typewriter-cursor" aria-hidden="true">|</span>
+            </span>
+          </p>
           <form onSubmit={handleSearchSubmit} className="hero-search">
             <input
               type="text"
