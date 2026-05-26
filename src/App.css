@@ -1,9 +1,3 @@
-/* ============================================================
-   YAKUTIA HOLIDAYS — Design System
-   Палитра: тайга, золото, тёплые земляные тона
-   Шрифты: Playfair Display (заголовки) + Inter (текст)
-   ============================================================ */
-
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 /* === Токены === */
@@ -457,12 +451,28 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.5rem); }
   color: white;
 }
 
+/* FIX: фиксированная высота строки — не скачет при пустом слове.
+   height вместо min-height гарантирует, что строка не схлопнется.
+   Невидимый ::after-символ удерживает line-height даже когда
+   typedWord === "" и в строке только курсор. */
 .typewriter-line {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Фиксированная высота строки — не скачет при смене слова */
-  min-height: 2rem;
+  height: 2.2rem;        /* фиксированная высота — не схлопывается */
+  overflow: hidden;      /* на случай, если шрифт чуть выходит за рамку */
+}
+
+/* Невидимый символ-распорка: удерживает высоту строки
+   при любом содержимом, включая пустую строку */
+.typewriter-line::after {
+  content: '\200B';      /* zero-width space */
+  display: inline-block;
+  font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+  font-weight: 700;
+  line-height: 1;
+  visibility: hidden;
+  width: 0;
 }
 
 .typewriter-word {
@@ -479,7 +489,8 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.5rem); }
   height: 1.2em;
   background: #FFD700;
   border-radius: 1px;
-  vertical-align: text-bottom;
+  vertical-align: middle;   /* выравниваем по центру строки, не по bottom */
+  flex-shrink: 0;
   animation: cursorBlink 1.1s ease-in-out infinite;
 }
 
