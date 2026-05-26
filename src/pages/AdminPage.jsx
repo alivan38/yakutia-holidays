@@ -15,14 +15,13 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // редактирование текста
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editPeople, setEditPeople] = useState('');
+  const [editDate, setEditDate] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editRegion, setEditRegion] = useState('');
 
-  // редактирование изображений
   const [editImages, setEditImages] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
   const [newPreviews, setNewPreviews] = useState([]);
@@ -61,11 +60,11 @@ export default function AdminPage() {
     }
   };
 
-  // ===== РЕДАКТИРОВАНИЕ =====
   const startEdit = (p) => {
     setEditingId(p.id);
     setEditTitle(p.title);
     setEditPeople(p.people);
+    setEditDate(p.date || '');
     setEditDescription(p.description);
     setEditRegion(p.region || '');
 
@@ -133,6 +132,7 @@ export default function AdminPage() {
         body: JSON.stringify({
           title: editTitle,
           people: editPeople,
+          date: editDate,
           description: editDescription,
           region: editRegion,
           images: finalImages,
@@ -142,7 +142,9 @@ export default function AdminPage() {
       if (!res.ok) throw new Error('Ошибка сохранения');
 
       setProposals(proposals.map(p =>
-        p.id === editingId ? { ...p, title: editTitle, people: editPeople, description: editDescription, region: editRegion, images: finalImages } : p
+        p.id === editingId
+          ? { ...p, title: editTitle, people: editPeople, date: editDate, description: editDescription, region: editRegion, images: finalImages }
+          : p
       ));
       setEditingId(null);
       newPreviews.forEach(url => URL.revokeObjectURL(url));
@@ -160,7 +162,6 @@ export default function AdminPage() {
     setNewPreviews([]);
   };
 
-
   const handleDelete = async (id) => {
     if (!window.confirm('Удалить запись? Она попадёт в корзину.')) return;
     try {
@@ -173,7 +174,6 @@ export default function AdminPage() {
     }
   };
 
-  // ===== ОДОБРЕНИЕ =====
   const handleToggleApprove = async (id, approved) => {
     try {
       const res = await fetch(`${BASE_URL}/${id}/approve?key=${key}`, {
@@ -187,7 +187,6 @@ export default function AdminPage() {
       alert('Ошибка обновления');
     }
   };
-
 
   const restoreFromTrash = async (id) => {
     try {
@@ -273,19 +272,48 @@ export default function AdminPage() {
       {editingId && (
         <div className="edit-panel">
           <h2>Редактировать предложение #{editingId}</h2>
-          <div className="note-section"><label className="note-label">Название *</label><input type="text" className="note-title-input" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /></div>
-          <div className="note-section"><label className="note-label">Народ *</label><select value={editPeople} onChange={(e) => setEditPeople(e.target.value)} className="note-title-input">{PEOPLES.map(p => <option key={p} value={p}>{p}</option>)}</select></div>
-          <div className="note-section"><label className="note-label">Описание *</label><textarea className="note-textarea" rows={6} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} /></div>
-          <div className="note-section"><label className="note-label">Регион</label><input type="text" className="note-title-input" value={editRegion} onChange={(e) => setEditRegion(e.target.value)} /></div>
+          <div className="note-section">
+            <label className="note-label">Название *</label>
+            <input type="text" className="note-title-input" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+          </div>
+          <div className="note-section">
+            <label className="note-label">Народ *</label>
+            <select value={editPeople} onChange={(e) => setEditPeople(e.target.value)} className="note-title-input">
+              {PEOPLES.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+          <div className="note-section">
+            <label className="note-label">Дата празднования</label>
+            <input
+              type="date"
+              className="note-title-input"
+              value={editDate}
+              onChange={(e) => setEditDate(e.target.value)}
+            />
+          </div>
+          <div className="note-section">
+            <label className="note-label">Описание *</label>
+            <textarea className="note-textarea" rows={6} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+          </div>
+          <div className="note-section">
+            <label className="note-label">Регион</label>
+            <input type="text" className="note-title-input" value={editRegion} onChange={(e) => setEditRegion(e.target.value)} />
+          </div>
 
           <div className="note-section">
             <label className="note-label">Изображения (макс. 5)</label>
             <div className="edit-images-preview">
               {editImages.map((url, idx) => (
-                <div key={idx} className="image-thumb"><img src={`${SERVER_URL}${url}`} alt="" /><button type="button" onClick={() => removeEditImage(idx)}>×</button></div>
+                <div key={idx} className="image-thumb">
+                  <img src={`${SERVER_URL}${url}`} alt="" />
+                  <button type="button" onClick={() => removeEditImage(idx)}>×</button>
+                </div>
               ))}
               {newPreviews.map((src, idx) => (
-                <div key={`new-${idx}`} className="image-thumb"><img src={src} alt="" /><button type="button" onClick={() => removeNewImage(idx)}>×</button></div>
+                <div key={`new-${idx}`} className="image-thumb">
+                  <img src={src} alt="" />
+                  <button type="button" onClick={() => removeNewImage(idx)}>×</button>
+                </div>
               ))}
             </div>
             <input type="file" accept="image/*" multiple onChange={handleNewFiles} className="file-input" />
@@ -300,13 +328,18 @@ export default function AdminPage() {
       )}
 
       <table className="admin-table">
-        <thead><tr><th>ID</th><th>Название</th><th>Народ</th><th>Описание</th><th>Регион</th><th>Одобрено</th><th>Действия</th></tr></thead>
+        <thead>
+          <tr>
+            <th>ID</th><th>Название</th><th>Народ</th><th>Дата</th><th>Описание</th><th>Регион</th><th>Одобрено</th><th>Действия</th>
+          </tr>
+        </thead>
         <tbody>
           {proposals.map(p => (
             <tr key={p.id} className={`${p.approved ? 'approved' : ''} ${p.id === editingId ? 'editing-row' : ''}`}>
               <td>{p.id}</td>
               <td>{p.title}</td>
               <td>{p.people}</td>
+              <td>{p.date || '—'}</td>
               <td>{p.description}</td>
               <td>{p.region || '—'}</td>
               <td>{p.approved ? 'Да' : 'Нет'}</td>

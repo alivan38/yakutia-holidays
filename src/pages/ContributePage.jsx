@@ -7,6 +7,7 @@ const PEOPLES = ['Якуты', 'Эвенки', 'Эвены', 'Юкагиры', '
 export default function ContributePage() {
   const [title, setTitle] = useState('');
   const [people, setPeople] = useState(PEOPLES[0]);
+  const [date, setDate] = useState('');
   const [description, setDescription] = useState('');
   const [region, setRegion] = useState('');
   const [files, setFiles] = useState([]);
@@ -14,7 +15,6 @@ export default function ContributePage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  // Очистка всех временных ссылок при уходе со страницы
   useEffect(() => {
     return () => {
       previews.forEach(url => URL.revokeObjectURL(url));
@@ -34,7 +34,6 @@ export default function ContributePage() {
   };
 
   const removeFile = (index) => {
-    // Освобождаем временную ссылку удаляемого превью
     URL.revokeObjectURL(previews[index]);
     setFiles(files.filter((_, i) => i !== index));
     setPreviews(previews.filter((_, i) => i !== index));
@@ -46,6 +45,7 @@ export default function ContributePage() {
     const formData = new FormData();
     formData.append('title', title);
     formData.append('people', people);
+    formData.append('date', date);
     formData.append('description', description);
     formData.append('region', region);
     files.forEach(file => formData.append('images', file));
@@ -89,6 +89,15 @@ export default function ContributePage() {
           <select value={people} onChange={(e) => setPeople(e.target.value)} required>
             {PEOPLES.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
+        </div>
+        <div className="form-group">
+          <label>Дата празднования</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            placeholder="дд.мм.гггг"
+          />
         </div>
         <div className="form-group">
           <label>Описание, обряды, история *</label>

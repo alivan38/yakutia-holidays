@@ -4,7 +4,6 @@ import { NavLink, useLocation } from "react-router-dom";
 const NAV_LINKS = [
   { to: "/",          label: "Главная",   icon: "🏠" },
   { to: "/calendar",  label: "Календарь", icon: "📅" },
-  { to: "/people/Якуты", label: "Народы", icon: "👥" },
   { to: "/contribute",label: "Добавить",  icon: "✍️" },
 ];
 
@@ -13,19 +12,16 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
-  // Закрывать меню при переходе на другую страницу
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
 
-  // Тень при скролле
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Блокировать скролл body при открытом меню
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -35,7 +31,6 @@ export default function Navbar() {
     <>
       <header className={`navbar${scrolled ? " navbar--scrolled" : ""}${menuOpen ? " navbar--open" : ""}` }>
         <div className="navbar-inner">
-          {/* Логотип */}
           <NavLink to="/" className="navbar-logo" aria-label="На главную">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
               <circle cx="16" cy="16" r="15" stroke="currentColor" strokeWidth="2"/>
@@ -48,7 +43,6 @@ export default function Navbar() {
             </span>
           </NavLink>
 
-          {/* Десктоп навигация */}
           <nav className="navbar-links" aria-label="Основная навигация">
             {NAV_LINKS.map((link) => (
               <NavLink
@@ -64,7 +58,6 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* Бургер-кнопка (мобильная) */}
           <button
             className="navbar-burger"
             onClick={() => setMenuOpen((v) => !v)}
@@ -78,7 +71,6 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Мобильное меню — выдвижная панель */}
       <div
         className={`mobile-menu${menuOpen ? " mobile-menu--open" : ""}`}
         aria-hidden={!menuOpen}
@@ -100,7 +92,6 @@ export default function Navbar() {
         </nav>
       </div>
 
-      {/* Затемнение фона при открытом меню */}
       {menuOpen && (
         <div
           className="mobile-menu-overlay"
