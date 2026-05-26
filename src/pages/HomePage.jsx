@@ -7,7 +7,6 @@ const MONTH_NAMES = [
   "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
   "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
 ];
-const PEOPLES = ["Якуты", "Эвенки", "Эвены", "Юкагиры", "Долганы", "Чукчи"];
 
 const TYPEWRITER_WORDS = ["традиции", "обряды", "праздники"];
 
@@ -63,7 +62,6 @@ function useTypewriter(
   const [wordIndex, setWordIndex] = useState(0);
   const [phase, setPhase] = useState("typing"); // "typing" | "pausing" | "deleting" | "waiting"
 
-  // Небольшая случайность для органичности (+/- 20% от базовой скорости)
   const jitter = useCallback(
     (base) => base + Math.random() * base * 0.4 - base * 0.2,
     []
@@ -80,11 +78,9 @@ function useTypewriter(
           jitter(typingSpeed)
         );
       } else {
-        // Слово полностью напечатано → пауза
         timeout = setTimeout(() => setPhase("pausing"), pauseAfterWord);
       }
     } else if (phase === "pausing") {
-      // После паузы — начинаем удалять
       setPhase("deleting");
     } else if (phase === "deleting") {
       if (displayed.length > 0) {
@@ -93,7 +89,6 @@ function useTypewriter(
           jitter(deletingSpeed)
         );
       } else {
-        // Слово полностью удалено → пауза перед следующим
         setPhase("waiting");
       }
     } else if (phase === "waiting") {
@@ -168,7 +163,6 @@ export default function HomePage() {
         <div className="hero-overlay">
           <h1>Праздники и обряды коренных народов Якутии</h1>
 
-          {/* Статичная строка + анимированное слово на отдельной строке */}
           <div className="hero-subtitle">
             <span className="hero-subtitle-static">Откройте для себя</span>
             <span className="typewriter-line">
@@ -192,18 +186,6 @@ export default function HomePage() {
               Найти
             </button>
           </form>
-        </div>
-      </section>
-
-      {/* Народы */}
-      <section className="peoples-section">
-        <h2>Коренные народы Якутии</h2>
-        <div className="peoples-grid">
-          {PEOPLES.map((name) => (
-            <Link key={name} to={`/people/${encodeURIComponent(name)}`} className="people-chip">
-              {name}
-            </Link>
-          ))}
         </div>
       </section>
 
