@@ -1152,6 +1152,11 @@ section h2 {
   transition: border-color var(--duration), box-shadow var(--duration);
 }
 
+/* Пустой select — текст прозрачный, символ не виден */
+.contribute-inline-select--empty {
+  color: transparent;
+}
+
 /* Пустой (placeholder) вариант — подсказка полупрозрачная */
 .contribute-inline-select:invalid,
 .contribute-inline-select option[value=""] {
