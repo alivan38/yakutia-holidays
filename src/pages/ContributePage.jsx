@@ -119,7 +119,6 @@ export default function ContributePage() {
     setPreviews(previews.filter((_, idx) => idx !== i));
   };
 
-  // Получаем токен один раз
   const getToken = async () => {
     const res = await fetch(`${DIRECTUS_URL}/auth/login`, {
       method: 'POST',
@@ -130,7 +129,6 @@ export default function ContributePage() {
     return data.data.access_token;
   };
 
-  // Загрузка одного файла
   const uploadFile = async (file, token) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -149,7 +147,6 @@ export default function ContributePage() {
     setLoading(true);
 
     try {
-      // 1. Загружаем фото если есть
       let imageIds = [];
       if (files.length > 0) {
         const token = await getToken();
@@ -159,14 +156,14 @@ export default function ContributePage() {
         }
       }
 
-      // 2. Создаём запись в propsals
+      // Поле называется "images" (не "image") — передаём массив UUID без JSON.stringify
       await createProposal({
         title,
         people,
         date:        date || null,
         description,
         region:      region || null,
-        image:       imageIds.length > 0 ? JSON.stringify(imageIds) : null,
+        images:      imageIds.length > 0 ? imageIds : null,
         approved:    false,
       });
 
