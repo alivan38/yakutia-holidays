@@ -386,26 +386,22 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.5rem); }
   align-items: center;
   gap: 0.4rem;
   margin-bottom: 1.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--surface);
+  padding: 0.4rem 0.75rem 0.4rem 0.25rem;
+  background: transparent;
+  border: none;
   color: var(--text-muted);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
   font-family: var(--font-body);
+  border-radius: var(--radius-sm);
   transition:
-    color        var(--duration) var(--ease),
-    background   var(--duration) var(--ease),
-    border-color var(--duration) var(--ease),
-    transform    var(--duration) var(--ease);
+    color     var(--duration) var(--ease),
+    transform var(--duration) var(--ease);
 }
 
 .back-link:hover {
   color: var(--primary);
-  background: var(--surface-2);
-  border-color: var(--primary);
-  transform: translateX(-2px);
+  transform: translateX(-3px);
 }
 
 .back-link:active { transform: translateX(0); }
@@ -957,25 +953,29 @@ section h2 {
   display: block;
 }
 
+/* Кнопка закрытия — без фона, только иконка */
 .image-modal-close {
   position: absolute;
   top: -2.5rem;
   right: 0;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
   width: 36px; height: 36px;
   border-radius: 50%;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background var(--duration);
+  transition: color var(--duration), transform var(--duration);
 }
 
-.image-modal-close:hover { background: rgba(255,255,255,0.25); }
+.image-modal-close:hover {
+  color: #fff;
+  transform: scale(1.15);
+}
 
 .image-modal-nav {
   display: flex;
