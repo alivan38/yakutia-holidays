@@ -11,7 +11,7 @@ const app  = express();
 const PORT = process.env.PORT || 5000;
 
 const DIRECTUS_URL   = process.env.DIRECTUS_URL   || 'http://localhost:8055';
-const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN; // Static Token из Directus
+const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN;
 
 if (!DIRECTUS_TOKEN) {
   console.error('❌  DIRECTUS_TOKEN не задан в .env — сервер не запущен');
@@ -36,6 +36,18 @@ app.get('/api/holidays', async (req, res) => {
     res.json(json.data || []);
   } catch {
     res.status(500).json({ error: 'Ошибка загрузки праздников' });
+  }
+});
+
+/* ── GET /api/holidays/:id ── */
+app.get('/api/holidays/:id', async (req, res) => {
+  try {
+    const r = await fetch(`${DIRECTUS_URL}/items/holidays/${req.params.id}`, { headers: directusHeaders });
+    if (!r.ok) return res.status(404).json({ error: 'Не найдено' });
+    const json = await r.json();
+    res.json(json.data || null);
+  } catch {
+    res.status(500).json({ error: 'Ошибка загрузки праздника' });
   }
 });
 
