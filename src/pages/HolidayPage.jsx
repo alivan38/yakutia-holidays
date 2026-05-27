@@ -2,7 +2,9 @@ import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { fetchHolidayById } from '../api/holidaysApi';
 import { fetchProposalById } from '../api/proposalsApi';
-import { DIRECTUS_ASSETS, getColorByPeople, formatDateLong, resolveImages } from '../constants';
+import { getColorByPeople, formatDateLong, resolveImages } from '../constants';
+
+const DIRECTUS_ASSETS = 'http://localhost:8055/assets';
 
 export default function HolidayPage() {
   const { id } = useParams();
