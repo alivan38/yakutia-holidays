@@ -1,22 +1,7 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { fetchHolidays } from "../api/holidaysApi";
-
-function getColorByPeople(people) {
-  const colors = {
-    "Якуты": "#C41E3A",
-    "Эвенки": "#FFD700",
-    "Эвены": "#87CEEB",
-    "Юкагиры": "#B71C1C",
-    "Долганы": "#CC7722",
-    "Чукчи": "#9E9E9E",
-  };
-  return colors[people] || "#4A90E2";
-}
-
-function truncate(text, maxLength) {
-  return text.length > maxLength ? text.slice(0, maxLength) + "…" : text;
-}
+import { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { fetchHolidays } from '../api/holidaysApi';
+import { getColorByPeople, truncate } from '../constants';
 
 export default function PeoplePage() {
   const { people } = useParams();
@@ -31,7 +16,7 @@ export default function PeoplePage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = allHolidays.filter((h) => h.people === decodedPeople);
+  const filtered = allHolidays.filter(h => h.people === decodedPeople);
 
   if (loading) return <div className="page">Загрузка...</div>;
 
@@ -43,12 +28,9 @@ export default function PeoplePage() {
         {filtered.length === 0 ? (
           <p>Нет данных о праздниках этого народа.</p>
         ) : (
-          filtered.map((h) => (
+          filtered.map(h => (
             <Link to={`/holiday/${h.id}`} key={h.id} className="holiday-card">
-              <div
-                className="holiday-card-image"
-                style={{ backgroundColor: getColorByPeople(h.people) }}
-              >
+              <div className="holiday-card-image" style={{ backgroundColor: getColorByPeople(h.people) }}>
                 {h.title[0]}
               </div>
               <div className="holiday-card-content">
