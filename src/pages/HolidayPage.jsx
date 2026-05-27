@@ -3,8 +3,7 @@ import { useState, useEffect } from "react";
 import { fetchHolidayById } from "../api/holidaysApi";
 import { fetchProposalById } from "../api/proposalsApi";
 
-const SERVER_URL = 'http://localhost:5000';
-const DIRECTUS_ASSETS = 'http://localhost:8055/assets';
+const DIRECTUS_URL = 'http://localhost:8055/assets';
 
 function formatDate(dateStr) {
   const [, month, day] = dateStr.split("-");
@@ -31,29 +30,17 @@ function parseImages(images) {
   if (!images) return [];
   if (Array.isArray(images)) return images;
   if (typeof images === 'string') {
+    // Формат JSON строка: "[\"uuid1\",\"uuid2\"]"
     try {
       const parsed = JSON.parse(images);
       if (Array.isArray(parsed)) return parsed;
     } catch {}
+    // Формат PostgreSQL: {uuid1,uuid2}
     if (images.startsWith('{')) {
       return images.slice(1, -1).split(',').map(s => s.replace(/^"|"$/g, '')).filter(Boolean);
     }
   }
   return [];
-}
-
-// Определяем URL изображения: предложение (из /uploads) или обычный праздник (из Directus)
-function getImageUrl(imageId, isProposal) {
-  if (!imageId) return null;
-  if (isProposal) {
-    // Пути вида /uploads/filename.jpg
-    if (imageId.startsWith('/uploads/') || imageId.startsWith('uploads/')) {
-      const clean = imageId.startsWith('/') ? imageId : `/${imageId}`;
-      return `${SERVER_URL}${clean}`;
-    }
-    return `${SERVER_URL}/uploads/${imageId}`;
-  }
-  return `${DIRECTUS_ASSETS}/${imageId}`;
 }
 
 export default function HolidayPage() {
@@ -78,7 +65,7 @@ export default function HolidayPage() {
                 isProposal: true,
                 date: data.date || null,
                 tags: data.tags || [],
-                images: parseImages(data.images || data.image),
+                images: parseImages(data.image || data.images),
               });
             } else {
               setHoliday(null);
@@ -89,7 +76,7 @@ export default function HolidayPage() {
           if (!cancelled) {
             setHoliday({
               ...data,
-              images: parseImages(data.image || data.images),
+              images: parseImages(data.image || data.images), // ← исправлено
               tags: Array.isArray(data.tags)
                 ? data.tags
                 : (data.tags ? data.tags.split(',').map(t => t.trim()) : []),
@@ -139,18 +126,11 @@ export default function HolidayPage() {
         <div className="holiday-meta">
           <span className="people">{displayHoliday.people}</span>
           {displayHoliday.date && <span className="date">{formatDate(displayHoliday.date)}</span>}
-          {displayHoliday.isProposal && (
-            <span className="proposal-badge">Предложено сообществом</span>
-          )}
         </div>
       </div>
 
       <div className="holiday-content">
         <p className="description">{displayHoliday.fullDescription}</p>
-
-        {displayHoliday.region && (
-          <p className="holiday-region"><strong>Регион:</strong> {displayHoliday.region}</p>
-        )}
 
         {displayHoliday.tags?.length > 0 && (
           <div className="tags">
@@ -165,18 +145,15 @@ export default function HolidayPage() {
           <div className="holiday-gallery">
             <h3>Фотографии</h3>
             <div className="gallery-grid">
-              {displayHoliday.images.map((imageId, idx) => {
-                const url = getImageUrl(imageId, displayHoliday.isProposal);
-                return (
-                  <img
-                    key={idx}
-                    src={url}
-                    alt={`Фото ${idx + 1}`}
-                    className="gallery-thumb"
-                    onClick={() => setSelectedImage({ url, index: idx })}
-                  />
-                );
-              })}
+              {displayHoliday.images.map((imageId, idx) => (
+                <img
+                  key={idx}
+                  src={`${DIRECTUS_URL}/${imageId}`}
+                  alt={`Фото ${idx + 1}`}
+                  className="gallery-thumb"
+                  onClick={() => setSelectedImage({ url: `${DIRECTUS_URL}/${imageId}`, index: idx })}
+                />
+              ))}
             </div>
           </div>
         )}
@@ -212,8 +189,10 @@ export default function HolidayPage() {
                     const prevIndex = selectedImage.index > 0
                       ? selectedImage.index - 1
                       : displayHoliday.images.length - 1;
-                    const url = getImageUrl(displayHoliday.images[prevIndex], displayHoliday.isProposal);
-                    setSelectedImage({ url, index: prevIndex });
+                    setSelectedImage({
+                      url: `${DIRECTUS_URL}/${displayHoliday.images[prevIndex]}`,
+                      index: prevIndex,
+                    });
                   }}
                 >
                   ←
@@ -228,8 +207,10 @@ export default function HolidayPage() {
                     const nextIndex = selectedImage.index < displayHoliday.images.length - 1
                       ? selectedImage.index + 1
                       : 0;
-                    const url = getImageUrl(displayHoliday.images[nextIndex], displayHoliday.isProposal);
-                    setSelectedImage({ url, index: nextIndex });
+                    setSelectedImage({
+                      url: `${DIRECTUS_URL}/${displayHoliday.images[nextIndex]}`,
+                      index: nextIndex,
+                    });
                   }}
                 >
                   →
