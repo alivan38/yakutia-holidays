@@ -1,5 +1,3 @@
-// Все запросы идут через Node.js бэкенд — Directus недоступен напрямую с фронта
-
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export async function fetchApprovedProposals() {
@@ -18,8 +16,11 @@ export async function uploadProposalFiles(files) {
   if (!files.length) return [];
   const form = new FormData();
   files.forEach(f => form.append('files', f));
-  const res = await fetch(`${API_URL}/api/proposals/upload`, { method: 'POST', body: form });
-  if (!res.ok) throw new Error('Ошибка загрузки файлов');
+  const res = await fetch(`${API_URL}/api/proposals/upload`, {
+    method: 'POST',
+    body: form,
+  });
+  if (!res.ok) return [];
   const json = await res.json();
   return json.ids || [];
 }
