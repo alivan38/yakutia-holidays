@@ -1,27 +1,26 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { createProposal } from '../api/proposalsApi';
 
-const API_URL = 'http://localhost:5000/api/proposals';
 const PEOPLES = ['Якуты', 'Эвенки', 'Эвены', 'Юкагиры', 'Долганы', 'Чукчи', 'Другое'];
 
 const MONTHS = [
-  { value: 1,  label: 'Январь',   days: 31 },
-  { value: 2,  label: 'Февраль',  days: 29 },
-  { value: 3,  label: 'Март',      days: 31 },
-  { value: 4,  label: 'Апрель',     days: 30 },
-  { value: 5,  label: 'Май',       days: 31 },
-  { value: 6,  label: 'Июнь',      days: 30 },
-  { value: 7,  label: 'Июль',      days: 31 },
-  { value: 8,  label: 'Август',     days: 31 },
-  { value: 9,  label: 'Сентябрь',  days: 30 },
-  { value: 10, label: 'Октябрь',   days: 31 },
-  { value: 11, label: 'Ноябрь',    days: 30 },
-  { value: 12, label: 'Декабрь',   days: 31 },
+  { value: 1,  label: 'Январь',  days: 31 },
+  { value: 2,  label: 'Февраль', days: 29 },
+  { value: 3,  label: 'Март',    days: 31 },
+  { value: 4,  label: 'Апрель',  days: 30 },
+  { value: 5,  label: 'Май',     days: 31 },
+  { value: 6,  label: 'Июнь',    days: 30 },
+  { value: 7,  label: 'Июль',    days: 31 },
+  { value: 8,  label: 'Август',  days: 31 },
+  { value: 9,  label: 'Сентябрь',days: 30 },
+  { value: 10, label: 'Октябрь', days: 31 },
+  { value: 11, label: 'Ноябрь',  days: 30 },
+  { value: 12, label: 'Декабрь', days: 31 },
 ];
 
-// Удобный пикер «Месяц + День»
-// value/onChange работают с форматом "2000-MM-DD" —
-// год 2000 нейтральный (праздники не привязаны к году)
+const DIRECTUS_URL = 'http://localhost:8055';
+
 function MonthDayPicker({ value, onChange }) {
   const parse = (v) => {
     if (!v) return { month: '', day: '' };
@@ -39,7 +38,6 @@ function MonthDayPicker({ value, onChange }) {
   const handleMonth = (e) => {
     const m = e.target.value;
     setMonth(m);
-    // сбросить день если он выходит за пределы нового месяца
     const newMax = MONTHS.find(mo => mo.value === Number(m))?.days ?? 31;
     const safeDay = day && Number(day) <= newMax ? day : '';
     setDay(safeDay);
@@ -66,28 +64,17 @@ function MonthDayPicker({ value, onChange }) {
     <div className="month-day-picker">
       <div className="month-day-picker__field">
         <label className="month-day-picker__sublabel">Месяц</label>
-        <select
-          className="month-day-picker__select"
-          value={month}
-          onChange={handleMonth}
-        >
-          <option value="">— выберите —</option>
+        <select className="month-day-picker__select" value={month} onChange={handleMonth}>
+          <option value="">—</option>
           {MONTHS.map(m => (
             <option key={m.value} value={m.value}>{m.label}</option>
           ))}
         </select>
       </div>
-
       <div className="month-day-picker__divider">/</div>
-
       <div className="month-day-picker__field month-day-picker__field--day">
         <label className="month-day-picker__sublabel">День</label>
-        <select
-          className="month-day-picker__select"
-          value={day}
-          onChange={handleDay}
-          disabled={!month}
-        >
+        <select className="month-day-picker__select" value={day} onChange={handleDay} disabled={!month}>
           <option value="">—</option>
           {days.map(d => (
             <option key={d} value={d}>{d}</option>
@@ -108,6 +95,7 @@ export default function ContributePage() {
   const [previews,    setPreviews]    = useState([]);
   const [submitted,   setSubmitted]   = useState(false);
   const [error,       setError]       = useState('');
+  const [loading,     setLoading]     = useState(false);
 
   useEffect(() => {
     return () => { previews.forEach(url => URL.revokeObjectURL(url)); };
@@ -115,7 +103,10 @@ export default function ContributePage() {
 
   const handleFiles = (e) => {
     const selected = Array.from(e.target.files);
-    if (files.length + selected.length > 5) { setError('Максимум 5 изображений'); return; }
+    if (files.length + selected.length > 5) {
+      setError('Максимум 5 изображений');
+      return;
+    }
     const newPreviews = selected.map(f => URL.createObjectURL(f));
     setFiles([...files, ...selected]);
     setPreviews([...previews, ...newPreviews]);
@@ -128,21 +119,64 @@ export default function ContributePage() {
     setPreviews(previews.filter((_, idx) => idx !== i));
   };
 
+  // Получаем токен один раз
+  const getToken = async () => {
+    const res = await fetch(`${DIRECTUS_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'admin@yakutia.ru', password: 'admin123' }),
+    });
+    const data = await res.json();
+    return data.data.access_token;
+  };
+
+  // Загрузка одного файла
+  const uploadFile = async (file, token) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${DIRECTUS_URL}/files`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData,
+    });
+    const json = await res.json();
+    return json?.data?.id || null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const formData = new FormData();
-    formData.append('title',       title);
-    formData.append('people',      people);
-    formData.append('date',        date);
-    formData.append('description', description);
-    formData.append('region',      region);
-    files.forEach(f => formData.append('images', f));
+    setLoading(true);
+
     try {
-      const res = await fetch(API_URL, { method: 'POST', body: formData });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error || 'Ошибка отправки'); }
+      // 1. Загружаем фото если есть
+      let imageIds = [];
+      if (files.length > 0) {
+        const token = await getToken();
+        for (const file of files) {
+          const uuid = await uploadFile(file, token);
+          if (uuid) imageIds.push(uuid);
+        }
+      }
+
+      // 2. Создаём запись в propsals
+      await createProposal({
+        title,
+        people,
+        date:        date || null,
+        description,
+        region:      region || null,
+        image:       imageIds.length > 0 ? JSON.stringify(imageIds) : null,
+        approved:    false,
+      });
+
       setSubmitted(true);
-    } catch (err) { setError(err.message); }
+    } catch (err) {
+      console.error('Ошибка:', err);
+      setError(err.message || 'Ошибка отправки');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -162,8 +196,8 @@ export default function ContributePage() {
       <Link to="/" className="back-link">← На главную</Link>
       <h1>Предложить новый праздник или обряд</h1>
       {error && <p className="auth-error">{error}</p>}
-      <form onSubmit={handleSubmit} className="contribute-form">
 
+      <form onSubmit={handleSubmit} className="contribute-form">
         <div className="form-group">
           <label>Название праздника *</label>
           <input type="text" value={title} onChange={e => setTitle(e.target.value)} required />
@@ -204,7 +238,9 @@ export default function ContributePage() {
           </div>
         </div>
 
-        <button type="submit" className="btn" style={{ width: '100%' }}>ОТПРАВИТЬ ДАННЫЕ</button>
+        <button type="submit" className="btn" style={{ width: '100%' }} disabled={loading}>
+          {loading ? 'Отправка...' : 'ОТПРАВИТЬ ДАННЫЕ'}
+        </button>
       </form>
     </div>
   );

@@ -1,24 +1,22 @@
-const API_URL = 'http://localhost:5000/api/proposals';
+import directus from '../lib/directus';
+import { readItems, readItem, createItem } from '@directus/sdk';
 
 export async function fetchApprovedProposals() {
-  const res = await fetch(`${API_URL}/approved`);
-  if (!res.ok) {
-    let message = 'Ошибка загрузки предложений';
-    try {
-      const err = await res.json();
-      message = err.error || message;
-    } catch {}
-    throw new Error(message);
-  }
-  return res.json();
+  return await directus.request(
+    readItems('propsals', {  // ← propsals (без o)
+      filter: { approved: { _eq: true } },
+    })
+  );
 }
 
-
 export async function fetchProposalById(id) {
-  const res = await fetch(`${API_URL}/${id}`);
-  if (!res.ok) {
-    if (res.status === 404) return null;  // не найдено – вернём null
-    throw new Error('Ошибка загрузки предложения');
+  try {
+    return await directus.request(readItem('propsals', id));  // ← propsals
+  } catch {
+    return null;
   }
-  return res.json();
+}
+
+export async function createProposal(data) {
+  return await directus.request(createItem('propsals', data));  // ← propsals
 }

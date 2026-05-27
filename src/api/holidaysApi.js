@@ -1,13 +1,13 @@
-const API_URL = 'http://localhost:5000/api/holidays';
+import directus from '../lib/directus';
+import { readItems, readItem } from '@directus/sdk';
 
-export async function fetchHolidays() {
-  const res = await fetch(API_URL);
-  if (!res.ok) throw new Error('Ошибка загрузки праздников');
-  return res.json();
-}
+export const getHolidays = async () => {
+  return await directus.request(readItems('holidays'));
+};
 
-export async function fetchHolidayById(id) {
-  const res = await fetch(`${API_URL}/${id}`);
-  if (!res.ok) throw new Error('Праздник не найден');
-  return res.json();
-}
+export const getHolidayById = async (id) => {
+  return await directus.request(readItem('holidays', id));
+};
+
+export const fetchHolidays = getHolidays;
+export const fetchHolidayById = getHolidayById;

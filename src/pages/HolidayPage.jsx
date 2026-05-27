@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { fetchHolidayById } from "../api/holidaysApi";
 import { fetchProposalById } from "../api/proposalsApi";
 
-const SERVER_URL = 'http://localhost:5000';
+const DIRECTUS_URL = 'http://localhost:8055/assets';
 
 function formatDate(dateStr) {
   const [, month, day] = dateStr.split("-");
@@ -29,8 +29,16 @@ function getColorByPeople(people) {
 function parseImages(images) {
   if (!images) return [];
   if (Array.isArray(images)) return images;
-  if (typeof images === 'string' && images.startsWith('{')) {
-    return images.slice(1, -1).split(',').map(s => s.replace(/^"|"$/g, '')).filter(Boolean);
+  if (typeof images === 'string') {
+    // Формат JSON строка: "[\"uuid1\",\"uuid2\"]"
+    try {
+      const parsed = JSON.parse(images);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
+    // Формат PostgreSQL: {uuid1,uuid2}
+    if (images.startsWith('{')) {
+      return images.slice(1, -1).split(',').map(s => s.replace(/^"|"$/g, '')).filter(Boolean);
+    }
   }
   return [];
 }
@@ -57,7 +65,7 @@ export default function HolidayPage() {
                 isProposal: true,
                 date: data.date || null,
                 tags: data.tags || [],
-                images: parseImages(data.images),
+                images: parseImages(data.image || data.images),
               });
             } else {
               setHoliday(null);
@@ -68,7 +76,11 @@ export default function HolidayPage() {
           if (!cancelled) {
             setHoliday({
               ...data,
-              images: parseImages(data.images),
+              images: parseImages(data.image || data.images), // ← исправлено
+              tags: Array.isArray(data.tags)
+                ? data.tags
+                : (data.tags ? data.tags.split(',').map(t => t.trim()) : []),
+              fullDescription: data.full_description || data.description,
             });
           }
         }
@@ -82,7 +94,6 @@ export default function HolidayPage() {
     return () => { cancelled = true; };
   }, [id]);
 
-  // Закрытие модального окна при нажатии Escape
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape') setSelectedImage(null);
@@ -104,7 +115,7 @@ export default function HolidayPage() {
   return (
     <div className="holiday-page">
       <Link to="/" className="back-link">← Назад к списку</Link>
-      
+
       <div
         className="holiday-hero"
         style={{
@@ -117,10 +128,10 @@ export default function HolidayPage() {
           {displayHoliday.date && <span className="date">{formatDate(displayHoliday.date)}</span>}
         </div>
       </div>
-      
+
       <div className="holiday-content">
         <p className="description">{displayHoliday.fullDescription}</p>
-        
+
         {displayHoliday.tags?.length > 0 && (
           <div className="tags">
             {displayHoliday.tags.map((tag) => (
@@ -134,13 +145,13 @@ export default function HolidayPage() {
           <div className="holiday-gallery">
             <h3>Фотографии</h3>
             <div className="gallery-grid">
-              {displayHoliday.images.map((url, idx) => (
+              {displayHoliday.images.map((imageId, idx) => (
                 <img
                   key={idx}
-                  src={`${SERVER_URL}${url}`}
+                  src={`${DIRECTUS_URL}/${imageId}`}
                   alt={`Фото ${idx + 1}`}
                   className="gallery-thumb"
-                  onClick={() => setSelectedImage({ url: `${SERVER_URL}${url}`, index: idx })}
+                  onClick={() => setSelectedImage({ url: `${DIRECTUS_URL}/${imageId}`, index: idx })}
                 />
               ))}
             </div>
@@ -148,39 +159,38 @@ export default function HolidayPage() {
         )}
       </div>
 
-      {/* Модальное окно для увеличения изображения */}
+      {/* Модальное окно */}
       {selectedImage && (
-        <div 
-          className="image-modal-overlay" 
+        <div
+          className="image-modal-overlay"
           onClick={() => setSelectedImage(null)}
         >
           <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button 
-              className="image-modal-close" 
+            <button
+              className="image-modal-close"
               onClick={() => setSelectedImage(null)}
               title="Закрыть"
             >
               &times;
             </button>
-            
-            <img 
-              src={selectedImage.url} 
+
+            <img
+              src={selectedImage.url}
               alt={`Увеличенное фото ${selectedImage.index + 1}`}
               className="image-modal-img"
             />
-            
-            {/* Навигация по галерее */}
+
             {displayHoliday.images.length > 1 && (
               <div className="image-modal-nav">
                 <button
                   className="image-modal-btn image-modal-prev"
                   onClick={(e) => {
                     e.stopPropagation();
-                    const prevIndex = selectedImage.index > 0 
-                      ? selectedImage.index - 1 
+                    const prevIndex = selectedImage.index > 0
+                      ? selectedImage.index - 1
                       : displayHoliday.images.length - 1;
                     setSelectedImage({
-                      url: `${SERVER_URL}${displayHoliday.images[prevIndex]}`,
+                      url: `${DIRECTUS_URL}/${displayHoliday.images[prevIndex]}`,
                       index: prevIndex,
                     });
                   }}
@@ -194,11 +204,11 @@ export default function HolidayPage() {
                   className="image-modal-btn image-modal-next"
                   onClick={(e) => {
                     e.stopPropagation();
-                    const nextIndex = selectedImage.index < displayHoliday.images.length - 1 
-                      ? selectedImage.index + 1 
+                    const nextIndex = selectedImage.index < displayHoliday.images.length - 1
+                      ? selectedImage.index + 1
                       : 0;
                     setSelectedImage({
-                      url: `${SERVER_URL}${displayHoliday.images[nextIndex]}`,
+                      url: `${DIRECTUS_URL}/${displayHoliday.images[nextIndex]}`,
                       index: nextIndex,
                     });
                   }}
