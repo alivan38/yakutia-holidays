@@ -57,8 +57,7 @@ function MonthDayPicker({ value, onChange }) {
         value={month}
         onChange={handleMonth}
       >
-        {/* Пустой вариант — только тире, без текста «Месяц» */}
-        <option value="">—</option>
+        <option value="">-</option>
         {MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
       </select>
       <select
@@ -66,8 +65,7 @@ function MonthDayPicker({ value, onChange }) {
         value={day}
         onChange={handleDay}
       >
-        {/* Пустой вариант — только тире, без текста «День» */}
-        <option value="">—</option>
+        <option value="">-</option>
         {Array.from({ length: maxDays }, (_, i) => i + 1).map(d => (
           <option key={d} value={d}>{d}</option>
         ))}
