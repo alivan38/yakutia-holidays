@@ -1,8 +1,5 @@
 // Общие константы приложения
 
-export const DIRECTUS_URL    = 'http://localhost:8055';
-export const DIRECTUS_ASSETS = `${DIRECTUS_URL}/assets`;
-
 export const PEOPLES = ['Якуты', 'Эвенки', 'Эвены', 'Юкагиры', 'Долганы', 'Чукчи', 'Другое'];
 
 export const MONTH_NAMES = [
