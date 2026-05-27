@@ -1115,6 +1115,81 @@ section h2 {
   box-shadow: 0 0 0 3px rgba(200,130,10,0.1);
 }
 
+/* Прозрачный placeholder во всех полях формы */
+.contribute-form input::placeholder,
+.contribute-form textarea::placeholder {
+  color: var(--text-faint);
+  opacity: 0.75;
+}
+
+/* ============================================================
+   НАРОД + ДАТА В ОДНУ СТРОКУ
+   ============================================================ */
+.contribute-inline-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+/* Базовый стиль для inline-селектов внутри строки */
+.contribute-inline-select {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 2rem 0.75rem 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  background-color: var(--surface);
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  transition: border-color var(--duration), box-shadow var(--duration);
+}
+
+/* Пустой (placeholder) вариант — подсказка полупрозрачная */
+.contribute-inline-select:invalid,
+.contribute-inline-select option[value=""] {
+  color: var(--text-faint);
+}
+
+/* Когда выбрано реальное значение — цвет текста нормальный */
+.contribute-inline-select:not(:invalid) {
+  color: var(--text);
+}
+
+.contribute-inline-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(200,130,10,0.1);
+  outline: none;
+}
+
+/* Народ занимает больше места, день — компактнее */
+.contribute-inline-select--people {
+  flex: 2;
+  min-width: 130px;
+}
+
+/* Месяц и день — по 1 части каждый */
+/* (уже flex:1 по умолчанию) */
+
+@media (max-width: 480px) {
+  .contribute-inline-row {
+    flex-direction: column;
+  }
+  .contribute-inline-select {
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   AUTH
+   ============================================================ */
 .auth-error {
   color: #b03a2e;
   background: #fff5f5;
