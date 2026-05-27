@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { createProposal, uploadProposalFiles } from '../api/proposalsApi';
 import { PEOPLES } from '../constants';
@@ -38,7 +38,6 @@ function MonthDayPicker({ value, onChange }) {
   const handleMonth = e => {
     const m = e.target.value;
     setMonth(m);
-    // сбрасываем день если он превышает новый максимум, но не блокируем поле
     const max = MONTHS.find(mo => mo.value === Number(m))?.days ?? 31;
     const safeDay = day && Number(day) <= max ? day : '';
     setDay(safeDay);
@@ -54,19 +53,21 @@ function MonthDayPicker({ value, onChange }) {
   return (
     <>
       <select
-        className="contribute-inline-select"
+        className={`contribute-inline-select${!month ? ' contribute-inline-select--empty' : ''}`}
         value={month}
         onChange={handleMonth}
       >
-        <option value="">Месяц</option>
+        {/* Пустой вариант — только тире, без текста «Месяц» */}
+        <option value="">—</option>
         {MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
       </select>
       <select
-        className="contribute-inline-select"
+        className={`contribute-inline-select${!day ? ' contribute-inline-select--empty' : ''}`}
         value={day}
         onChange={handleDay}
       >
-        <option value="">День</option>
+        {/* Пустой вариант — только тире, без текста «День» */}
+        <option value="">—</option>
         {Array.from({ length: maxDays }, (_, i) => i + 1).map(d => (
           <option key={d} value={d}>{d}</option>
         ))}
@@ -83,6 +84,9 @@ export default function ContributePage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // ref для сброса поля input[type=file]
+  const fileInputRef = useRef(null);
+
   useEffect(() => () => { previews.forEach(URL.revokeObjectURL); }, [previews]);
 
   const set = field => e => setForm(f => ({ ...f, [field]: e.target.value }));
@@ -97,8 +101,11 @@ export default function ContributePage() {
 
   const removeFile = i => {
     URL.revokeObjectURL(previews[i]);
-    setFiles(f => f.filter((_, idx) => idx !== i));
+    const newFiles = files.filter((_, idx) => idx !== i);
+    setFiles(newFiles);
     setPreviews(p => p.filter((_, idx) => idx !== i));
+    // Сбрасываем input — браузер покажет «Файл не выбран»
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = async e => {
@@ -175,7 +182,14 @@ export default function ContributePage() {
 
         <div className="form-group">
           <label>Фотографии (до 5 шт.)</label>
-          <input type="file" accept="image/*" multiple onChange={handleFiles} className="file-input" />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFiles}
+            className="file-input"
+          />
           <div className="file-preview-container">
             {previews.map((src, idx) => (
               <div key={idx} className="file-preview-item">
