@@ -1,6 +1,6 @@
 // Общие константы приложения
 
-export const DIRECTUS_URL = 'http://localhost:8055';
+export const DIRECTUS_URL    = 'http://localhost:8055';
 export const DIRECTUS_ASSETS = `${DIRECTUS_URL}/assets`;
 
 export const PEOPLES = ['Якуты', 'Эвенки', 'Эвены', 'Юкагиры', 'Долганы', 'Чукчи', 'Другое'];
@@ -10,12 +10,12 @@ export const MONTH_NAMES = [
   'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
 ];
 
-export const MONTH_NAMES_GENITIVE = [
+const MONTH_NAMES_GENITIVE = [
   'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
 ];
 
-export const PEOPLE_COLORS = {
+const PEOPLE_COLORS = {
   'Якуты':   '#C41E3A',
   'Эвенки':  '#FFD700',
   'Эвены':   '#87CEEB',
@@ -43,7 +43,7 @@ export function truncate(text, maxLength) {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export function parseImages(raw) {
+function parseImages(raw) {
   if (!raw) return [];
   if (Array.isArray(raw))
     return raw.map(item => (typeof item === 'string' ? item : item?.id ?? null)).filter(Boolean);
