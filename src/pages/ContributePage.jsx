@@ -1,25 +1,24 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { createProposal } from '../api/proposalsApi';
 
 const PEOPLES = ['Якуты', 'Эвенки', 'Эвены', 'Юкагиры', 'Долганы', 'Чукчи', 'Другое'];
 
 const MONTHS = [
-  { value: 1,  label: 'Январь',  days: 31 },
-  { value: 2,  label: 'Февраль', days: 29 },
-  { value: 3,  label: 'Март',    days: 31 },
-  { value: 4,  label: 'Апрель',  days: 30 },
-  { value: 5,  label: 'Май',     days: 31 },
-  { value: 6,  label: 'Июнь',    days: 30 },
-  { value: 7,  label: 'Июль',    days: 31 },
-  { value: 8,  label: 'Август',  days: 31 },
-  { value: 9,  label: 'Сентябрь',days: 30 },
-  { value: 10, label: 'Октябрь', days: 31 },
-  { value: 11, label: 'Ноябрь',  days: 30 },
-  { value: 12, label: 'Декабрь', days: 31 },
+  { value: 1,  label: 'Январь',   days: 31 },
+  { value: 2,  label: 'Февраль',  days: 29 },
+  { value: 3,  label: 'Март',     days: 31 },
+  { value: 4,  label: 'Апрель',   days: 30 },
+  { value: 5,  label: 'Май',      days: 31 },
+  { value: 6,  label: 'Июнь',     days: 30 },
+  { value: 7,  label: 'Июль',     days: 31 },
+  { value: 8,  label: 'Август',   days: 31 },
+  { value: 9,  label: 'Сентябрь', days: 30 },
+  { value: 10, label: 'Октябрь',  days: 31 },
+  { value: 11, label: 'Ноябрь',   days: 30 },
+  { value: 12, label: 'Декабрь',  days: 31 },
 ];
 
-const DIRECTUS_URL = 'http://localhost:8055';
+const SERVER_URL = 'http://localhost:5000';
 
 function MonthDayPicker({ value, onChange }) {
   const parse = (v) => {
@@ -119,56 +118,28 @@ export default function ContributePage() {
     setPreviews(previews.filter((_, idx) => idx !== i));
   };
 
-  // Получаем токен один раз
-  const getToken = async () => {
-    const res = await fetch(`${DIRECTUS_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'admin@yakutia.ru', password: 'admin123' }),
-    });
-    const data = await res.json();
-    return data.data.access_token;
-  };
-
-  // Загрузка одного файла
-  const uploadFile = async (file, token) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    const res = await fetch(`${DIRECTUS_URL}/files`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
-      body: formData,
-    });
-    const json = await res.json();
-    return json?.data?.id || null;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      // 1. Загружаем фото если есть
-      let imageIds = [];
-      if (files.length > 0) {
-        const token = await getToken();
-        for (const file of files) {
-          const uuid = await uploadFile(file, token);
-          if (uuid) imageIds.push(uuid);
-        }
-      }
+      // Отправляем всё через FormData на Node.js бэкенд
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('people', people);
+      formData.append('description', description);
+      if (region) formData.append('region', region);
+      if (date)   formData.append('date', date);
+      files.forEach(file => formData.append('images', file));
 
-      // 2. Создаём запись в propsals
-      await createProposal({
-        title,
-        people,
-        date:        date || null,
-        description,
-        region:      region || null,
-        image:       imageIds.length > 0 ? JSON.stringify(imageIds) : null,
-        approved:    false,
+      const res = await fetch(`${SERVER_URL}/api/proposals`, {
+        method: 'POST',
+        body: formData,
       });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Ошибка отправки');
 
       setSubmitted(true);
     } catch (err) {
