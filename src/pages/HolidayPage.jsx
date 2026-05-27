@@ -26,29 +26,26 @@ function getColorByPeople(people) {
   return colors[people] || "#4A90E2";
 }
 
-// UUID регекспр
-
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function parseImages(raw) {
   if (!raw) return [];
 
-  // Уже массив
   if (Array.isArray(raw)) {
     return raw.map(item => {
       if (typeof item === 'string') return item;
-      if (item && typeof item === 'object') return item.id || item;
-      return item;
+      if (item && typeof item === 'object') return item.id || null;
+      return null;
     }).filter(Boolean);
   }
 
   if (typeof raw === 'string') {
+    const trimmed = raw.trim();
     // Одиночный UUID
-    if (UUID_RE.test(raw.trim())) return [raw.trim()];
-
-    // JSON массив: ["uuid1","uuid2"]
+    if (UUID_RE.test(trimmed)) return [trimmed];
+    // JSON: ["uuid", ...]
     try {
-      const parsed = JSON.parse(raw);
+      const parsed = JSON.parse(trimmed);
       if (Array.isArray(parsed)) {
         return parsed.map(item => {
           if (typeof item === 'string') return item;
@@ -56,20 +53,23 @@ function parseImages(raw) {
           return null;
         }).filter(Boolean);
       }
-      // Если поле объект с id (Directus file relation)
       if (parsed && typeof parsed === 'object' && parsed.id) return [parsed.id];
     } catch {}
-
-    // PostgreSQL массив: {uuid1,uuid2}
-    if (raw.startsWith('{')) {
-      return raw.slice(1, -1).split(',').map(s => s.replace(/^"|"$/g, '').trim()).filter(Boolean);
+    // PostgreSQL: {uuid1,uuid2}
+    if (trimmed.startsWith('{')) {
+      return trimmed.slice(1, -1).split(',').map(s => s.replace(/^"|"$/g, '').trim()).filter(Boolean);
     }
   }
 
-  // Объект Directus с id
   if (raw && typeof raw === 'object' && raw.id) return [raw.id];
-
   return [];
+}
+
+// Исправленная версия: пробует data.images, если пусто — пробует data.image
+function resolveImages(data) {
+  const fromImages = parseImages(data.images);
+  if (fromImages.length > 0) return fromImages;
+  return parseImages(data.image);
 }
 
 export default function HolidayPage() {
@@ -88,15 +88,13 @@ export default function HolidayPage() {
           const data = await fetchProposalById(numericId);
           if (!cancelled) {
             if (data) {
-              // пробуем оба поля: image и images
-              const imgs = parseImages(data.image) || parseImages(data.images);
               setHoliday({
                 ...data,
                 fullDescription: data.description,
                 isProposal: true,
                 date: data.date || null,
                 tags: data.tags || [],
-                images: imgs,
+                images: resolveImages(data),
               });
             } else {
               setHoliday(null);
@@ -107,7 +105,7 @@ export default function HolidayPage() {
           if (!cancelled) {
             setHoliday({
               ...data,
-              images: parseImages(data.image || data.images),
+              images: resolveImages(data),
               tags: Array.isArray(data.tags)
                 ? data.tags
                 : (data.tags ? data.tags.split(',').map(t => t.trim()) : []),
@@ -129,9 +127,7 @@ export default function HolidayPage() {
     const handleEsc = (e) => {
       if (e.key === 'Escape') setSelectedImage(null);
     };
-    if (selectedImage) {
-      document.addEventListener('keydown', handleEsc);
-    }
+    if (selectedImage) document.addEventListener('keydown', handleEsc);
     return () => document.removeEventListener('keydown', handleEsc);
   }, [selectedImage]);
 
@@ -171,7 +167,6 @@ export default function HolidayPage() {
           </div>
         )}
 
-        {/* Галерея изображений */}
         {displayHoliday.images && displayHoliday.images.length > 0 && (
           <div className="holiday-gallery">
             <h3>Фотографии</h3>
@@ -190,62 +185,36 @@ export default function HolidayPage() {
         )}
       </div>
 
-      {/* Модальное окно */}
       {selectedImage && (
-        <div
-          className="image-modal-overlay"
-          onClick={() => setSelectedImage(null)}
-        >
+        <div className="image-modal-overlay" onClick={() => setSelectedImage(null)}>
           <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="image-modal-close"
-              onClick={() => setSelectedImage(null)}
-              title="Закрыть"
-            >
+            <button className="image-modal-close" onClick={() => setSelectedImage(null)} title="Закрыть">
               &times;
             </button>
-
             <img
               src={selectedImage.url}
               alt={`Увеличенное фото ${selectedImage.index + 1}`}
               className="image-modal-img"
             />
-
             {displayHoliday.images.length > 1 && (
               <div className="image-modal-nav">
                 <button
                   className="image-modal-btn image-modal-prev"
                   onClick={(e) => {
                     e.stopPropagation();
-                    const prevIndex = selectedImage.index > 0
-                      ? selectedImage.index - 1
-                      : displayHoliday.images.length - 1;
-                    setSelectedImage({
-                      url: `${DIRECTUS_ASSETS}/${displayHoliday.images[prevIndex]}`,
-                      index: prevIndex,
-                    });
+                    const prevIndex = selectedImage.index > 0 ? selectedImage.index - 1 : displayHoliday.images.length - 1;
+                    setSelectedImage({ url: `${DIRECTUS_ASSETS}/${displayHoliday.images[prevIndex]}`, index: prevIndex });
                   }}
-                >
-                  ←
-                </button>
-                <span className="image-modal-counter">
-                  {selectedImage.index + 1} / {displayHoliday.images.length}
-                </span>
+                >←</button>
+                <span className="image-modal-counter">{selectedImage.index + 1} / {displayHoliday.images.length}</span>
                 <button
                   className="image-modal-btn image-modal-next"
                   onClick={(e) => {
                     e.stopPropagation();
-                    const nextIndex = selectedImage.index < displayHoliday.images.length - 1
-                      ? selectedImage.index + 1
-                      : 0;
-                    setSelectedImage({
-                      url: `${DIRECTUS_ASSETS}/${displayHoliday.images[nextIndex]}`,
-                      index: nextIndex,
-                    });
+                    const nextIndex = selectedImage.index < displayHoliday.images.length - 1 ? selectedImage.index + 1 : 0;
+                    setSelectedImage({ url: `${DIRECTUS_ASSETS}/${displayHoliday.images[nextIndex]}`, index: nextIndex });
                   }}
-                >
-                  →
-                </button>
+                >→</button>
               </div>
             )}
           </div>
