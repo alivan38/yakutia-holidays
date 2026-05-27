@@ -15,12 +15,12 @@ export async function fetchProposalById(id) {
 export async function uploadProposalFiles(files) {
   if (!files.length) return [];
   const form = new FormData();
-  files.forEach(f => form.append('files', f));
+  files.forEach((f) => form.append('files', f));
   const res = await fetch(`${API_URL}/api/proposals/upload`, {
     method: 'POST',
     body: form,
   });
-  if (!res.ok) return [];
+  if (!res.ok) throw new Error('Ошибка загрузки файлов');
   const json = await res.json();
   return json.ids || [];
 }
