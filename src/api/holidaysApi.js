@@ -1,15 +1,7 @@
-import { DIRECTUS_URL } from '../constants';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export async function fetchHolidays() {
-  const res = await fetch(`${DIRECTUS_URL}/items/holidays?limit=-1`);
+  const res = await fetch(`${API_URL}/api/holidays`);
   if (!res.ok) return [];
-  const json = await res.json();
-  return json.data || [];
-}
-
-export async function fetchHolidayById(id) {
-  const res = await fetch(`${DIRECTUS_URL}/items/holidays/${id}`);
-  if (!res.ok) return null;
-  const json = await res.json();
-  return json.data || null;
+  return res.json();
 }
