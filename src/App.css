@@ -984,22 +984,21 @@ section h2 {
 }
 
 .image-modal-btn {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
   width: 44px; height: 44px;
   border-radius: 50%;
-  font-size: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background var(--duration), transform var(--duration);
+  transition: color var(--duration), transform var(--duration);
 }
 
 .image-modal-btn:hover {
-  background: rgba(255,255,255,0.25);
-  transform: scale(1.08);
+  color: #fff;
+  transform: scale(1.15);
 }
 
 .image-modal-counter {
@@ -1115,7 +1114,6 @@ section h2 {
   box-shadow: 0 0 0 3px rgba(200,130,10,0.1);
 }
 
-/* Прозрачный placeholder во всех полях формы */
 .contribute-form input::placeholder,
 .contribute-form textarea::placeholder {
   color: var(--text-faint);
@@ -1132,7 +1130,6 @@ section h2 {
   flex-wrap: wrap;
 }
 
-/* Базовый стиль для inline-селектов внутри строки */
 .contribute-inline-select {
   flex: 1;
   min-width: 0;
@@ -1152,18 +1149,15 @@ section h2 {
   transition: border-color var(--duration), box-shadow var(--duration);
 }
 
-/* Пустой select — текст прозрачный, символ не виден */
 .contribute-inline-select--empty {
   color: transparent;
 }
 
-/* Пустой (placeholder) вариант — подсказка полупрозрачная */
 .contribute-inline-select:invalid,
 .contribute-inline-select option[value=""] {
   color: var(--text-faint);
 }
 
-/* Когда выбрано реальное значение — цвет текста нормальный */
 .contribute-inline-select:not(:invalid) {
   color: var(--text);
 }
@@ -1174,14 +1168,10 @@ section h2 {
   outline: none;
 }
 
-/* Народ занимает больше места, день — компактнее */
 .contribute-inline-select--people {
   flex: 2;
   min-width: 130px;
 }
-
-/* Месяц и день — по 1 части каждый */
-/* (уже flex:1 по умолчанию) */
 
 @media (max-width: 480px) {
   .contribute-inline-row {
