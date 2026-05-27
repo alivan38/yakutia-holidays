@@ -1,13 +1,15 @@
-import directus from '../lib/directus';
-import { readItems, readItem } from '@directus/sdk';
+import { DIRECTUS_URL } from '../constants';
 
-export const getHolidays = async () => {
-  return await directus.request(readItems('holidays'));
-};
+export async function fetchHolidays() {
+  const res = await fetch(`${DIRECTUS_URL}/items/holidays?limit=-1`);
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data || [];
+}
 
-export const getHolidayById = async (id) => {
-  return await directus.request(readItem('holidays', id));
-};
-
-export const fetchHolidays = getHolidays;
-export const fetchHolidayById = getHolidayById;
+export async function fetchHolidayById(id) {
+  const res = await fetch(`${DIRECTUS_URL}/items/holidays/${id}`);
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.data || null;
+}

@@ -1,50 +1,28 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
-import { fetchApprovedProposals } from "../api/proposalsApi";
-import { fetchHolidays } from "../api/holidaysApi";
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { fetchApprovedProposals } from '../api/proposalsApi';
+import { fetchHolidays } from '../api/holidaysApi';
+import {
+  MONTH_NAMES, getColorByPeople, truncate, formatDateShort, resolveImages,
+} from '../constants';
 
-const MONTH_NAMES = [
-  "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-  "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
-];
-
-const TYPEWRITER_WORDS = ["традиции", "обряды", "праздники"];
-
-function getColorByPeople(people) {
-  const colors = {
-    "Якуты": "#C41E3A",
-    "Эвенки": "#FFD700",
-    "Эвены": "#87CEEB",
-    "Юкагиры": "#B71C1C",
-    "Долганы": "#CC7722",
-    "Чукчи": "#9E9E9E",
-  };
-  return colors[people] || "#4A90E2";
-}
-
-function truncate(text, maxLength) {
-  return text.length > maxLength ? text.slice(0, maxLength) + "…" : text;
-}
+const TYPEWRITER_WORDS = ['традиции', 'обряды', 'праздники'];
 
 function getUpcomingHoliday(holidays) {
   const today = new Date();
   const thisYear = today.getFullYear();
   const upcoming = holidays
-    .filter((h) => h.date)
-    .flatMap((h) => {
-      const [, month, day] = h.date.split("-");
+    .filter(h => h.date)
+    .flatMap(h => {
+      const [, month, day] = h.date.split('-');
       return [
         { ...h, dateObj: new Date(`${thisYear}-${month}-${day}`) },
         { ...h, dateObj: new Date(`${thisYear + 1}-${month}-${day}`) },
       ];
     })
-    .filter((h) => h.dateObj >= today)
+    .filter(h => h.dateObj >= today)
     .sort((a, b) => a.dateObj - b.dateObj);
   return upcoming[0] || null;
-}
-
-function formatDateShort(dateObj) {
-  return `${String(dateObj.getDate()).padStart(2, "0")}.${String(dateObj.getMonth() + 1).padStart(2, "0")}`;
 }
 
 function daysUntil(dateObj) {
@@ -53,51 +31,34 @@ function daysUntil(dateObj) {
   return Math.ceil((dateObj - today) / 86400000);
 }
 
-/* ===== Хук: эффект печатания ===== */
 function useTypewriter(
   words,
   { typingSpeed = 90, deletingSpeed = 45, pauseAfterWord = 1800, pauseBeforeType = 300 } = {}
 ) {
-  const [displayed, setDisplayed] = useState("");
+  const [displayed, setDisplayed] = useState('');
   const [wordIndex, setWordIndex] = useState(0);
-  const [phase, setPhase] = useState("typing"); // "typing" | "pausing" | "deleting" | "waiting"
+  const [phase, setPhase] = useState('typing');
 
-  const jitter = useCallback(
-    (base) => base + Math.random() * base * 0.4 - base * 0.2,
-    []
-  );
+  const jitter = useCallback(base => base + Math.random() * base * 0.4 - base * 0.2, []);
 
   useEffect(() => {
     const current = words[wordIndex % words.length];
     let timeout;
-
-    if (phase === "typing") {
-      if (displayed.length < current.length) {
-        timeout = setTimeout(
-          () => setDisplayed(current.slice(0, displayed.length + 1)),
-          jitter(typingSpeed)
-        );
-      } else {
-        timeout = setTimeout(() => setPhase("pausing"), pauseAfterWord);
-      }
-    } else if (phase === "pausing") {
-      setPhase("deleting");
-    } else if (phase === "deleting") {
-      if (displayed.length > 0) {
-        timeout = setTimeout(
-          () => setDisplayed(current.slice(0, displayed.length - 1)),
-          jitter(deletingSpeed)
-        );
-      } else {
-        setPhase("waiting");
-      }
-    } else if (phase === "waiting") {
-      timeout = setTimeout(() => {
-        setWordIndex((i) => (i + 1) % words.length);
-        setPhase("typing");
-      }, pauseBeforeType);
+    if (phase === 'typing') {
+      if (displayed.length < current.length)
+        timeout = setTimeout(() => setDisplayed(current.slice(0, displayed.length + 1)), jitter(typingSpeed));
+      else
+        timeout = setTimeout(() => setPhase('pausing'), pauseAfterWord);
+    } else if (phase === 'pausing') {
+      setPhase('deleting');
+    } else if (phase === 'deleting') {
+      if (displayed.length > 0)
+        timeout = setTimeout(() => setDisplayed(current.slice(0, displayed.length - 1)), jitter(deletingSpeed));
+      else
+        setPhase('waiting');
+    } else if (phase === 'waiting') {
+      timeout = setTimeout(() => { setWordIndex(i => (i + 1) % words.length); setPhase('typing'); }, pauseBeforeType);
     }
-
     return () => clearTimeout(timeout);
   }, [displayed, phase, wordIndex, words, typingSpeed, deletingSpeed, pauseAfterWord, pauseBeforeType, jitter]);
 
@@ -105,14 +66,12 @@ function useTypewriter(
 }
 
 export default function HomePage() {
-  const [search, setSearch] = useState("");
-  const [selectedPeople, setSelectedPeople] = useState("Все");
-  const [selectedMonth, setSelectedMonth] = useState("Все");
+  const [search, setSearch] = useState('');
+  const [selectedPeople, setSelectedPeople] = useState('Все');
+  const [selectedMonth, setSelectedMonth] = useState('Все');
   const catalogRef = useRef(null);
-
   const [holidays, setHolidays] = useState([]);
   const [approvedProposals, setApprovedProposals] = useState([]);
-
   const typedWord = useTypewriter(TYPEWRITER_WORDS);
 
   useEffect(() => {
@@ -120,39 +79,38 @@ export default function HomePage() {
     fetchApprovedProposals().then(setApprovedProposals).catch(() => setApprovedProposals([]));
   }, []);
 
-  const allHolidays = useMemo(() => {
-    const mapped = approvedProposals.map((p) => ({
+  const allHolidays = useMemo(() => [
+    ...holidays,
+    ...approvedProposals.map(p => ({
       id: `proposal-${p.id}`,
       title: p.title,
       people: p.people,
       description: p.description,
       fullDescription: p.description,
-      date: "",
+      date: '',
       tags: [],
-      image: [],
+      images: resolveImages(p),
       isProposal: true,
-    }));
-    return [...holidays, ...mapped];
-  }, [holidays, approvedProposals]);
+    })),
+  ], [holidays, approvedProposals]);
 
-  const allPeoples = useMemo(() => ["Все", ...new Set(allHolidays.map((h) => h.people))], [allHolidays]);
+  const allPeoples = useMemo(() => ['Все', ...new Set(allHolidays.map(h => h.people))], [allHolidays]);
 
-  const filteredHolidays = useMemo(() => {
-    return allHolidays.filter((h) => {
-      const matchSearch = h.title.toLowerCase().includes(search.toLowerCase()) || h.description.toLowerCase().includes(search.toLowerCase());
-      const matchPeople = selectedPeople === "Все" || h.people === selectedPeople;
-      if (!h.date) return matchSearch && matchPeople;
-      const holidayMonth = h.date.split("-")[1];
-      const matchMonth = selectedMonth === "Все" || MONTH_NAMES[parseInt(holidayMonth, 10) - 1] === selectedMonth;
-      return matchSearch && matchPeople && matchMonth;
-    });
-  }, [search, selectedPeople, selectedMonth, allHolidays]);
+  const filteredHolidays = useMemo(() => allHolidays.filter(h => {
+    const matchSearch = h.title.toLowerCase().includes(search.toLowerCase())
+      || h.description.toLowerCase().includes(search.toLowerCase());
+    const matchPeople = selectedPeople === 'Все' || h.people === selectedPeople;
+    if (!h.date) return matchSearch && matchPeople;
+    const matchMonth = selectedMonth === 'Все'
+      || MONTH_NAMES[parseInt(h.date.split('-')[1], 10) - 1] === selectedMonth;
+    return matchSearch && matchPeople && matchMonth;
+  }), [search, selectedPeople, selectedMonth, allHolidays]);
 
   const upcoming = useMemo(() => getUpcomingHoliday(holidays), [holidays]);
 
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = e => {
     e.preventDefault();
-    catalogRef.current?.scrollIntoView({ behavior: "smooth" });
+    catalogRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -162,7 +120,6 @@ export default function HomePage() {
         <div className="hero-bg"></div>
         <div className="hero-overlay">
           <h1>Праздники и обряды коренных народов Якутии</h1>
-
           <div className="hero-subtitle">
             <span className="hero-subtitle-static">Откройте для себя</span>
             <span className="typewriter-line">
@@ -170,13 +127,12 @@ export default function HomePage() {
               <span className="typewriter-cursor" aria-hidden="true"></span>
             </span>
           </div>
-
           <form onSubmit={handleSearchSubmit} className="hero-search">
             <input
               type="text"
               placeholder="Поиск праздника..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
               className="hero-search-input"
             />
             <button type="submit" className="hero-search-btn">
@@ -193,30 +149,28 @@ export default function HomePage() {
       <section className="holidays-section" ref={catalogRef}>
         <h2>Праздники и обряды</h2>
         <div className="filters">
-          <select value={selectedPeople} onChange={(e) => setSelectedPeople(e.target.value)}>
-            {allPeoples.map((p) => <option key={p} value={p}>{p}</option>)}
+          <select value={selectedPeople} onChange={e => setSelectedPeople(e.target.value)}>
+            {allPeoples.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
-          <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
+          <select value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)}>
             <option value="Все">Все месяцы</option>
-            {MONTH_NAMES.map((m) => <option key={m} value={m}>{m}</option>)}
+            {MONTH_NAMES.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
         <div className="holidays-preview-grid">
-          {filteredHolidays.length > 0 ? (
-            filteredHolidays.map((h) => (
-              <Link to={`/holiday/${h.id}`} key={h.id} className="holiday-card">
-                <div className="holiday-card-media" style={{ backgroundColor: getColorByPeople(h.people) }}>
-                  <span className="holiday-card-icon">{h.title[0]}</span>
-                </div>
-                <div className="holiday-card-body">
-                  <h3>{h.title}</h3>
-                  <p className="holiday-card-people">{h.people}</p>
-                  <p className="holiday-card-desc">{truncate(h.description, 90)}</p>
-                  {h.isProposal && <span className="proposal-dot" title="Недавно добавлен"></span>}
-                </div>
-              </Link>
-            ))
-          ) : (
+          {filteredHolidays.length > 0 ? filteredHolidays.map(h => (
+            <Link to={`/holiday/${h.id}`} key={h.id} className="holiday-card">
+              <div className="holiday-card-media" style={{ backgroundColor: getColorByPeople(h.people) }}>
+                <span className="holiday-card-icon">{h.title[0]}</span>
+              </div>
+              <div className="holiday-card-body">
+                <h3>{h.title}</h3>
+                <p className="holiday-card-people">{h.people}</p>
+                <p className="holiday-card-desc">{truncate(h.description, 90)}</p>
+                {h.isProposal && <span className="proposal-dot" title="Недавно добавлен"></span>}
+              </div>
+            </Link>
+          )) : (
             <p className="no-results">Ничего не найдено</p>
           )}
         </div>
@@ -235,7 +189,7 @@ export default function HomePage() {
               <p className="upcoming-date">{formatDateShort(upcoming.dateObj)} {upcoming.dateObj.getFullYear()}</p>
               <p className="upcoming-description">{truncate(upcoming.description, 120)}</p>
               <div className="upcoming-countdown">
-                {daysUntil(upcoming.dateObj) === 0 ? "Сегодня!" : `Через ${daysUntil(upcoming.dateObj)} дн.`}
+                {daysUntil(upcoming.dateObj) === 0 ? 'Сегодня!' : `Через ${daysUntil(upcoming.dateObj)} дн.`}
               </div>
               <Link to={`/holiday/${upcoming.id}`} className="btn">Подробнее →</Link>
             </div>
