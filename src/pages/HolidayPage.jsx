@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { fetchHolidayById } from "../api/holidaysApi";
 import { fetchProposalById } from "../api/proposalsApi";
 
-const DIRECTUS_URL = 'http://localhost:8055/assets';
+const DIRECTUS_ASSETS = 'http://localhost:8055/assets';
 
 function formatDate(dateStr) {
   const [, month, day] = dateStr.split("-");
@@ -26,20 +26,49 @@ function getColorByPeople(people) {
   return colors[people] || "#4A90E2";
 }
 
-function parseImages(images) {
-  if (!images) return [];
-  if (Array.isArray(images)) return images;
-  if (typeof images === 'string') {
-    // Формат JSON строка: "[\"uuid1\",\"uuid2\"]"
+// UUID регекспр
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function parseImages(raw) {
+  if (!raw) return [];
+
+  // Уже массив
+  if (Array.isArray(raw)) {
+    return raw.map(item => {
+      if (typeof item === 'string') return item;
+      if (item && typeof item === 'object') return item.id || item;
+      return item;
+    }).filter(Boolean);
+  }
+
+  if (typeof raw === 'string') {
+    // Одиночный UUID
+    if (UUID_RE.test(raw.trim())) return [raw.trim()];
+
+    // JSON массив: ["uuid1","uuid2"]
     try {
-      const parsed = JSON.parse(images);
-      if (Array.isArray(parsed)) return parsed;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.map(item => {
+          if (typeof item === 'string') return item;
+          if (item && typeof item === 'object') return item.id || null;
+          return null;
+        }).filter(Boolean);
+      }
+      // Если поле объект с id (Directus file relation)
+      if (parsed && typeof parsed === 'object' && parsed.id) return [parsed.id];
     } catch {}
-    // Формат PostgreSQL: {uuid1,uuid2}
-    if (images.startsWith('{')) {
-      return images.slice(1, -1).split(',').map(s => s.replace(/^"|"$/g, '')).filter(Boolean);
+
+    // PostgreSQL массив: {uuid1,uuid2}
+    if (raw.startsWith('{')) {
+      return raw.slice(1, -1).split(',').map(s => s.replace(/^"|"$/g, '').trim()).filter(Boolean);
     }
   }
+
+  // Объект Directus с id
+  if (raw && typeof raw === 'object' && raw.id) return [raw.id];
+
   return [];
 }
 
@@ -59,13 +88,15 @@ export default function HolidayPage() {
           const data = await fetchProposalById(numericId);
           if (!cancelled) {
             if (data) {
+              // пробуем оба поля: image и images
+              const imgs = parseImages(data.image) || parseImages(data.images);
               setHoliday({
                 ...data,
                 fullDescription: data.description,
                 isProposal: true,
                 date: data.date || null,
                 tags: data.tags || [],
-                images: parseImages(data.image || data.images),
+                images: imgs,
               });
             } else {
               setHoliday(null);
@@ -76,7 +107,7 @@ export default function HolidayPage() {
           if (!cancelled) {
             setHoliday({
               ...data,
-              images: parseImages(data.image || data.images), // ← исправлено
+              images: parseImages(data.image || data.images),
               tags: Array.isArray(data.tags)
                 ? data.tags
                 : (data.tags ? data.tags.split(',').map(t => t.trim()) : []),
@@ -148,10 +179,10 @@ export default function HolidayPage() {
               {displayHoliday.images.map((imageId, idx) => (
                 <img
                   key={idx}
-                  src={`${DIRECTUS_URL}/${imageId}`}
+                  src={`${DIRECTUS_ASSETS}/${imageId}`}
                   alt={`Фото ${idx + 1}`}
                   className="gallery-thumb"
-                  onClick={() => setSelectedImage({ url: `${DIRECTUS_URL}/${imageId}`, index: idx })}
+                  onClick={() => setSelectedImage({ url: `${DIRECTUS_ASSETS}/${imageId}`, index: idx })}
                 />
               ))}
             </div>
@@ -190,7 +221,7 @@ export default function HolidayPage() {
                       ? selectedImage.index - 1
                       : displayHoliday.images.length - 1;
                     setSelectedImage({
-                      url: `${DIRECTUS_URL}/${displayHoliday.images[prevIndex]}`,
+                      url: `${DIRECTUS_ASSETS}/${displayHoliday.images[prevIndex]}`,
                       index: prevIndex,
                     });
                   }}
@@ -208,7 +239,7 @@ export default function HolidayPage() {
                       ? selectedImage.index + 1
                       : 0;
                     setSelectedImage({
-                      url: `${DIRECTUS_URL}/${displayHoliday.images[nextIndex]}`,
+                      url: `${DIRECTUS_ASSETS}/${displayHoliday.images[nextIndex]}`,
                       index: nextIndex,
                     });
                   }}
