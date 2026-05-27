@@ -38,34 +38,40 @@ function MonthDayPicker({ value, onChange }) {
   const handleMonth = e => {
     const m = e.target.value;
     setMonth(m);
+    // сбрасываем день если он превышает новый максимум, но не блокируем поле
     const max = MONTHS.find(mo => mo.value === Number(m))?.days ?? 31;
     const safeDay = day && Number(day) <= max ? day : '';
     setDay(safeDay);
     emit(m, safeDay);
   };
 
-  const handleDay = e => { setDay(e.target.value); emit(month, e.target.value); };
+  const handleDay = e => {
+    const d = e.target.value;
+    setDay(d);
+    emit(month, d);
+  };
 
   return (
-    <div className="month-day-picker">
-      <div className="month-day-picker__field">
-        <label className="month-day-picker__sublabel">Месяц</label>
-        <select className="month-day-picker__select" value={month} onChange={handleMonth}>
-          <option value="">—</option>
-          {MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-        </select>
-      </div>
-      <div className="month-day-picker__divider">/</div>
-      <div className="month-day-picker__field month-day-picker__field--day">
-        <label className="month-day-picker__sublabel">День</label>
-        <select className="month-day-picker__select" value={day} onChange={handleDay} disabled={!month}>
-          <option value="">—</option>
-          {Array.from({ length: maxDays }, (_, i) => i + 1).map(d => (
-            <option key={d} value={d}>{d}</option>
-          ))}
-        </select>
-      </div>
-    </div>
+    <>
+      <select
+        className="contribute-inline-select"
+        value={month}
+        onChange={handleMonth}
+      >
+        <option value="">Месяц</option>
+        {MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+      </select>
+      <select
+        className="contribute-inline-select"
+        value={day}
+        onChange={handleDay}
+      >
+        <option value="">День</option>
+        {Array.from({ length: maxDays }, (_, i) => i + 1).map(d => (
+          <option key={d} value={d}>{d}</option>
+        ))}
+      </select>
+    </>
   );
 }
 
@@ -132,28 +138,41 @@ export default function ContributePage() {
       <h1>Предложить новый праздник или обряд</h1>
       {error && <p className="auth-error">{error}</p>}
       <form onSubmit={handleSubmit} className="contribute-form">
+
         <div className="form-group">
           <label>Название праздника *</label>
-          <input type="text" value={form.title} onChange={set('title')} required />
+          <input type="text" value={form.title} onChange={set('title')} required placeholder="Например: Ысыах" />
         </div>
+
+        {/* Народ + Дата в одну строку */}
         <div className="form-group">
-          <label>Народ *</label>
-          <select value={form.people} onChange={set('people')} required>
-            {PEOPLES.map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <label>Народ, Дата празднования</label>
+          <div className="contribute-inline-row">
+            <select
+              className="contribute-inline-select contribute-inline-select--people"
+              value={form.people}
+              onChange={set('people')}
+              required
+            >
+              {PEOPLES.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+            <MonthDayPicker
+              value={form.date}
+              onChange={v => setForm(f => ({ ...f, date: v }))}
+            />
+          </div>
         </div>
-        <div className="form-group">
-          <label>Дата празднования</label>
-          <MonthDayPicker value={form.date} onChange={v => setForm(f => ({ ...f, date: v }))} />
-        </div>
+
         <div className="form-group">
           <label>Описание, обряды, история *</label>
-          <textarea value={form.description} onChange={set('description')} required rows={5} />
+          <textarea value={form.description} onChange={set('description')} required rows={5} placeholder="Расскажите об истории, обрядах и традициях праздника…" />
         </div>
+
         <div className="form-group">
           <label>Регион</label>
-          <input type="text" value={form.region} onChange={set('region')} />
+          <input type="text" value={form.region} onChange={set('region')} placeholder="Например: Мирнинский район" />
         </div>
+
         <div className="form-group">
           <label>Фотографии (до 5 шт.)</label>
           <input type="file" accept="image/*" multiple onChange={handleFiles} className="file-input" />
@@ -166,6 +185,7 @@ export default function ContributePage() {
             ))}
           </div>
         </div>
+
         <button type="submit" className="btn" style={{ width: '100%' }} disabled={loading}>
           {loading ? 'Отправка...' : 'ОТПРАВИТЬ ДАННЫЕ'}
         </button>
