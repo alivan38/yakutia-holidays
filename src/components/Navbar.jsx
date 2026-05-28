@@ -32,10 +32,27 @@ export default function Navbar() {
       <header className={`navbar${scrolled ? " navbar--scrolled" : ""}${menuOpen ? " navbar--open" : ""}` }>
         <div className="navbar-inner">
           <NavLink to="/" className="navbar-logo" aria-label="На главную">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <circle cx="16" cy="16" r="15" stroke="currentColor" strokeWidth="2"/>
-              <path d="M16 6 L20 14 L28 14 L22 19 L24 27 L16 22 L8 27 L10 19 L4 14 L12 14 Z"
-                fill="currentColor" opacity="0.85"/>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="36" height="36" aria-hidden="true">
+              <circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" strokeWidth="3"/>
+              <ellipse cx="50" cy="58" rx="16" ry="11" fill="currentColor"/>
+              <rect x="47" y="44" width="8" height="12" rx="3" fill="currentColor"/>
+              <ellipse cx="51" cy="41" rx="7" ry="6" fill="currentColor"/>
+              <ellipse cx="55" cy="43" rx="4" ry="3" fill="currentColor"/>
+              <ellipse cx="45" cy="36" rx="2.5" ry="4" fill="currentColor" transform="rotate(-15 45 36)"/>
+              <ellipse cx="55" cy="35" rx="2.5" ry="4" fill="currentColor" transform="rotate(15 55 35)"/>
+              <line x1="46" y1="34" x2="38" y2="20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              <line x1="38" y1="20" x2="33" y2="14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="38" y1="20" x2="34" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="38" y1="26" x2="32" y2="22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="54" y1="33" x2="62" y2="19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              <line x1="62" y1="19" x2="67" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="62" y1="19" x2="66" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="62" y1="25" x2="68" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="40" y1="67" x2="38" y2="80" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/>
+              <line x1="45" y1="68" x2="44" y2="81" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/>
+              <line x1="55" y1="68" x2="56" y2="81" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/>
+              <line x1="60" y1="67" x2="62" y2="80" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/>
+              <ellipse cx="34" cy="57" rx="4" ry="3" fill="currentColor" transform="rotate(-20 34 57)"/>
             </svg>
             <span className="navbar-logo-text">
               <span className="navbar-logo-primary">Якутия</span>
