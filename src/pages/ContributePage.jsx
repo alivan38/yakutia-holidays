@@ -126,79 +126,96 @@ export default function ContributePage() {
   };
 
   if (submitted) return (
-    <div className="page contribute-success">
-      <div className="success-card">
-        <h2>Спасибо за ваш вклад!</h2>
-        <p>Информация о празднике «{form.title}» отправлена на модерацию.</p>
-        <Link to="/" className="btn">Вернуться на главную</Link>
+    <>
+      <div className="page contribute-success">
+        <div className="success-card">
+          <h2>Спасибо за ваш вклад!</h2>
+          <p>Информация о празднике «{form.title}» отправлена на модерацию.</p>
+          <Link to="/" className="btn">Вернуться на главную</Link>
+        </div>
       </div>
-    </div>
+      <footer className="site-footer">
+        <div className="footer-content">
+          <p>677000, Республика Саха (Якутия), г. Якутск, ул. Орджоникидзе, д. 4</p>
+          <p className="copyright">&copy; 2026 ФГБОУ ВО «Арктический государственный институт искусств и культуры»</p>
+        </div>
+      </footer>
+    </>
   );
 
   return (
-    <div className="page contribute-page">
-      <Link to="/" className="back-link">← На главную</Link>
-      <h1>Предложить новый праздник или обряд</h1>
-      {error && <p className="auth-error">{error}</p>}
-      <form onSubmit={handleSubmit} className="contribute-form">
+    <>
+      <div className="page contribute-page">
+        <Link to="/" className="back-link">&larr; На главную</Link>
+        <h1>Предложить новый праздник или обряд</h1>
+        {error && <p className="auth-error">{error}</p>}
+        <form onSubmit={handleSubmit} className="contribute-form">
 
-        <div className="form-group">
-          <label>Название праздника *</label>
-          <input type="text" value={form.title} onChange={set('title')} required placeholder="Например: Ысыах" />
-        </div>
+          <div className="form-group">
+            <label>Название праздника *</label>
+            <input type="text" value={form.title} onChange={set('title')} required placeholder="Например: Ысыах" />
+          </div>
 
-        <div className="form-group">
-          <label>Народ, Дата празднования</label>
-          <div className="contribute-inline-row">
-            <select
-              className="contribute-inline-select contribute-inline-select--people"
-              value={form.people}
-              onChange={set('people')}
-              required
-            >
-              {PEOPLES.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-            <MonthDayPicker
-              value={form.date}
-              onChange={v => setForm(f => ({ ...f, date: v }))}
+          <div className="form-group">
+            <label>Народ, Дата празднования</label>
+            <div className="contribute-inline-row">
+              <select
+                className="contribute-inline-select contribute-inline-select--people"
+                value={form.people}
+                onChange={set('people')}
+                required
+              >
+                {PEOPLES.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+              <MonthDayPicker
+                value={form.date}
+                onChange={v => setForm(f => ({ ...f, date: v }))}
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Описание, обряды, история *</label>
+            <textarea value={form.description} onChange={set('description')} required rows={5} placeholder="Расскажите об истории, обрядах и традициях праздника…" />
+          </div>
+
+          <div className="form-group">
+            <label>Регион</label>
+            <input type="text" value={form.region} onChange={set('region')} placeholder="Например: Мирнинский район" />
+          </div>
+
+          <div className="form-group">
+            <label>Фотографии (до 5 шт.)</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFiles}
+              className="file-input"
             />
+            <div className="file-preview-container">
+              {previews.map((src, idx) => (
+                <div key={idx} className="file-preview-item">
+                  <img src={src} alt={`Превью ${idx + 1}`} />
+                  <button type="button" className="remove-file-btn" onClick={() => removeFile(idx)}>×</button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="form-group">
-          <label>Описание, обряды, история *</label>
-          <textarea value={form.description} onChange={set('description')} required rows={5} placeholder="Расскажите об истории, обрядах и традициях праздника…" />
-        </div>
+          <button type="submit" className="btn" style={{ width: '100%' }} disabled={loading}>
+            {loading ? 'Отправка...' : 'ОТПРАВИТЬ ДАННЫЕ'}
+          </button>
+        </form>
+      </div>
 
-        <div className="form-group">
-          <label>Регион</label>
-          <input type="text" value={form.region} onChange={set('region')} placeholder="Например: Мирнинский район" />
+      <footer className="site-footer">
+        <div className="footer-content">
+          <p>677000, Республика Саха (Якутия), г. Якутск, ул. Орджоникидзе, д. 4</p>
+          <p className="copyright">&copy; 2026 ФГБОУ ВО «Арктический государственный институт искусств и культуры»</p>
         </div>
-
-        <div className="form-group">
-          <label>Фотографии (до 5 шт.)</label>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFiles}
-            className="file-input"
-          />
-          <div className="file-preview-container">
-            {previews.map((src, idx) => (
-              <div key={idx} className="file-preview-item">
-                <img src={src} alt={`Превью ${idx + 1}`} />
-                <button type="button" className="remove-file-btn" onClick={() => removeFile(idx)}>×</button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <button type="submit" className="btn" style={{ width: '100%' }} disabled={loading}>
-          {loading ? 'Отправка...' : 'ОТПРАВИТЬ ДАННЫЕ'}
-        </button>
-      </form>
-    </div>
+      </footer>
+    </>
   );
 }

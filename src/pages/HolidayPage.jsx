@@ -31,7 +31,7 @@ export default function HolidayPage() {
 
   if (isLoading) return (
     <div className="holiday-page">
-      <Link to="/" className="back-link">← Назад к списку</Link>
+      <Link to="/" className="back-link">&larr; Назад к списку</Link>
       <div className="skeleton" style={{ height: '180px', borderRadius: '16px', marginBottom: '2rem' }} />
       <div className="skeleton skeleton-text" style={{ width: '80%', marginBottom: '1rem' }} />
       <div className="skeleton skeleton-text" />
@@ -41,8 +41,8 @@ export default function HolidayPage() {
 
   if (isError || !holiday) return (
     <div className="holiday-page">
-      <Link to="/" className="back-link">← Назад к списку</Link>
-      <p style={{ color: 'var(--text-muted)', marginTop: '2rem' }}>⚠️ Праздник не найден или произошла ошибка.</p>
+      <Link to="/" className="back-link">&larr; Назад к списку</Link>
+      <p style={{ color: 'var(--text-muted)', marginTop: '2rem' }}>&warning; Праздник не найден или произошла ошибка.</p>
     </div>
   );
 
@@ -54,67 +54,76 @@ export default function HolidayPage() {
   };
 
   return (
-    <div className="holiday-page">
-      <Link to="/" className="back-link">← Назад к списку</Link>
+    <>
+      <div className="holiday-page">
+        <Link to="/" className="back-link">&larr; Назад к списку</Link>
 
-      <div
-        className="holiday-hero"
-        style={{ backgroundColor: holiday.isProposal ? '#27ae60' : getColorByPeople(holiday.people) }}
-      >
-        <h1>{holiday.title}</h1>
-        <div className="holiday-meta">
-          <span className="people">{holiday.people}</span>
-          {holiday.date && <span className="date">{formatDateLong(holiday.date)}</span>}
-        </div>
-      </div>
-
-      <div className="holiday-content">
-        <p className="description">{holiday.fullDescription}</p>
-
-        {holiday.tags?.length > 0 && (
-          <div className="tags">
-            {holiday.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}
+        <div
+          className="holiday-hero"
+          style={{ backgroundColor: holiday.isProposal ? '#27ae60' : getColorByPeople(holiday.people) }}
+        >
+          <h1>{holiday.title}</h1>
+          <div className="holiday-meta">
+            <span className="people">{holiday.people}</span>
+            {holiday.date && <span className="date">{formatDateLong(holiday.date)}</span>}
           </div>
-        )}
+        </div>
 
-        {images.length > 0 && (
-          <div className="holiday-gallery">
-            <h3>Фотографии</h3>
-            <div className="gallery-grid">
-              {images.map((imgId, idx) => (
-                <img
-                  key={idx}
-                  src={`${DIRECTUS_ASSETS}/${imgId}`}
-                  alt={`Фото ${idx + 1}`}
-                  className="gallery-thumb"
-                  loading="lazy"
-                  onClick={() => setSelectedImage({ url: `${DIRECTUS_ASSETS}/${imgId}`, index: idx })}
-                />
-              ))}
+        <div className="holiday-content">
+          <p className="description">{holiday.fullDescription}</p>
+
+          {holiday.tags?.length > 0 && (
+            <div className="tags">
+              {holiday.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}
+            </div>
+          )}
+
+          {images.length > 0 && (
+            <div className="holiday-gallery">
+              <h3>Фотографии</h3>
+              <div className="gallery-grid">
+                {images.map((imgId, idx) => (
+                  <img
+                    key={idx}
+                    src={`${DIRECTUS_ASSETS}/${imgId}`}
+                    alt={`Фото ${idx + 1}`}
+                    className="gallery-thumb"
+                    loading="lazy"
+                    onClick={() => setSelectedImage({ url: `${DIRECTUS_ASSETS}/${imgId}`, index: idx })}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {selectedImage && (
+          <div className="image-modal-overlay" onClick={() => setSelectedImage(null)}>
+            <div className="image-modal-content" onClick={e => e.stopPropagation()}>
+              <button className="image-modal-close" onClick={() => setSelectedImage(null)} title="Закрыть">&times;</button>
+              <img src={selectedImage.url} alt={`Фото ${selectedImage.index + 1}`} className="image-modal-img" />
+              {images.length > 1 && (
+                <div className="image-modal-nav">
+                  <button className="image-modal-btn" onClick={e => { e.stopPropagation(); navigate(-1); }}>
+                    <IconArrowLeft />
+                  </button>
+                  <span className="image-modal-counter">{selectedImage.index + 1} / {images.length}</span>
+                  <button className="image-modal-btn" onClick={e => { e.stopPropagation(); navigate(1); }}>
+                    <IconArrowRight />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
       </div>
 
-      {selectedImage && (
-        <div className="image-modal-overlay" onClick={() => setSelectedImage(null)}>
-          <div className="image-modal-content" onClick={e => e.stopPropagation()}>
-            <button className="image-modal-close" onClick={() => setSelectedImage(null)} title="Закрыть">&times;</button>
-            <img src={selectedImage.url} alt={`Фото ${selectedImage.index + 1}`} className="image-modal-img" />
-            {images.length > 1 && (
-              <div className="image-modal-nav">
-                <button className="image-modal-btn" onClick={e => { e.stopPropagation(); navigate(-1); }}>
-                  <IconArrowLeft />
-                </button>
-                <span className="image-modal-counter">{selectedImage.index + 1} / {images.length}</span>
-                <button className="image-modal-btn" onClick={e => { e.stopPropagation(); navigate(1); }}>
-                  <IconArrowRight />
-                </button>
-              </div>
-            )}
-          </div>
+      <footer className="site-footer">
+        <div className="footer-content">
+          <p>677000, Республика Саха (Якутия), г. Якутск, ул. Орджоникидзе, д. 4</p>
+          <p className="copyright">&copy; 2026 ФГБОУ ВО «Арктический государственный институт искусств и культуры»</p>
         </div>
-      )}
-    </div>
+      </footer>
+    </>
   );
 }

@@ -19,7 +19,7 @@ export default function CalendarPage() {
   const events = useMemo(() => {
     const currentYear = new Date().getFullYear();
     return holidays
-      .filter(h => h.date)  // защита от краша если date = null
+      .filter(h => h.date)
       .map(h => {
         const [, month, day] = h.date.split('-');
         return {
@@ -39,17 +39,26 @@ export default function CalendarPage() {
   );
 
   return (
-    <div className="calendar-page">
-      <h1 className="main-title">Календарь праздников</h1>
-      <FullCalendar
-        plugins={[dayGridPlugin, interactionPlugin, multiMonthPlugin]}
-        initialView="multiMonthYear"
-        headerToolbar={{ left: 'prev,next today', center: 'title', right: 'multiMonthYear,dayGridMonth' }}
-        locale="ru"
-        firstDay={1}
-        events={events}
-        height="auto"
-      />
-    </div>
+    <>
+      <div className="calendar-page">
+        <h1 className="main-title">Календарь праздников</h1>
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin, multiMonthPlugin]}
+          initialView="multiMonthYear"
+          headerToolbar={{ left: 'prev,next today', center: 'title', right: 'multiMonthYear,dayGridMonth' }}
+          locale="ru"
+          firstDay={1}
+          events={events}
+          height="auto"
+        />
+      </div>
+
+      <footer className="site-footer">
+        <div className="footer-content">
+          <p>677000, Республика Саха (Якутия), г. Якутск, ул. Орджоникидзе, д. 4</p>
+          <p className="copyright">&copy; 2026 ФГБОУ ВО «Арктический государственный институт искусств и культуры»</p>
+        </div>
+      </footer>
+    </>
   );
 }
