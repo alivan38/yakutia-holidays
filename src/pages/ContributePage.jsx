@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { createProposal, uploadProposalFiles } from '../api/proposalsApi';
+import { submitProposal, uploadFiles } from '../api/proposalsApi';
 import { PEOPLES } from '../constants';
 
 const MONTHS = [
@@ -82,7 +82,6 @@ export default function ContributePage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // ref для сброса поля input[type=file]
   const fileInputRef = useRef(null);
 
   useEffect(() => () => { previews.forEach(URL.revokeObjectURL); }, [previews]);
@@ -102,7 +101,6 @@ export default function ContributePage() {
     const newFiles = files.filter((_, idx) => idx !== i);
     setFiles(newFiles);
     setPreviews(p => p.filter((_, idx) => idx !== i));
-    // Сбрасываем input — браузер покажет «Файл не выбран»
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -111,8 +109,8 @@ export default function ContributePage() {
     setError('');
     setLoading(true);
     try {
-      const imageIds = await uploadProposalFiles(files);
-      await createProposal({
+      const imageIds = files.length > 0 ? await uploadFiles(files) : [];
+      await submitProposal({
         ...form,
         date:     form.date || null,
         region:   form.region || null,
@@ -149,7 +147,6 @@ export default function ContributePage() {
           <input type="text" value={form.title} onChange={set('title')} required placeholder="Например: Ысыах" />
         </div>
 
-        {/* Народ + Дата в одну строку */}
         <div className="form-group">
           <label>Народ, Дата празднования</label>
           <div className="contribute-inline-row">
