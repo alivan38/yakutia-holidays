@@ -831,6 +831,7 @@ section h2 {
 .holiday-hero {
   color: white;
   height: 200px;
+  flex-shrink: 0;
   padding: clamp(1.5rem, 3vw, 2.5rem);
   border-radius: var(--radius-xl);
   margin-bottom: 2rem;
