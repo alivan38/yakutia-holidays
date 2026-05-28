@@ -33,26 +33,19 @@ export default function Navbar() {
         <div className="navbar-inner">
           <NavLink to="/" className="navbar-logo" aria-label="На главную">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="36" height="36" aria-hidden="true">
-              <circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" strokeWidth="3"/>
-              <ellipse cx="50" cy="58" rx="16" ry="11" fill="currentColor"/>
-              <rect x="47" y="44" width="8" height="12" rx="3" fill="currentColor"/>
-              <ellipse cx="51" cy="41" rx="7" ry="6" fill="currentColor"/>
-              <ellipse cx="55" cy="43" rx="4" ry="3" fill="currentColor"/>
-              <ellipse cx="45" cy="36" rx="2.5" ry="4" fill="currentColor" transform="rotate(-15 45 36)"/>
-              <ellipse cx="55" cy="35" rx="2.5" ry="4" fill="currentColor" transform="rotate(15 55 35)"/>
-              <line x1="46" y1="34" x2="38" y2="20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-              <line x1="38" y1="20" x2="33" y2="14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <line x1="38" y1="20" x2="34" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <line x1="38" y1="26" x2="32" y2="22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <line x1="54" y1="33" x2="62" y2="19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-              <line x1="62" y1="19" x2="67" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <line x1="62" y1="19" x2="66" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <line x1="62" y1="25" x2="68" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <line x1="40" y1="67" x2="38" y2="80" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/>
-              <line x1="45" y1="68" x2="44" y2="81" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/>
-              <line x1="55" y1="68" x2="56" y2="81" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/>
-              <line x1="60" y1="67" x2="62" y2="80" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/>
-              <ellipse cx="34" cy="57" rx="4" ry="3" fill="currentColor" transform="rotate(-20 34 57)"/>
+              <circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" strokeWidth="2.5"/>
+              <path d="M36 72 Q34 65 35 58 Q36 52 44 50 Q48 49 50 49 Q52 49 56 50 Q64 52 65 58 Q66 65 64 72" fill="currentColor"/>
+              <path d="M44 50 Q43 44 44 40 Q45 36 50 35 Q55 34 56 38 Q57 42 56 50" fill="currentColor"/>
+              <path d="M47 38 Q46 41 47 43 Q49 46 53 45 Q56 44 56 41 Q55 37 52 36 Q49 35 47 38Z" fill="currentColor"/>
+              <path d="M44 38 Q41 34 42 30 Q44 28 46 31 Q47 34 45 38Z" fill="currentColor"/>
+              <path d="M56 37 Q57 33 59 30 Q61 28 62 31 Q62 35 59 38Z" fill="currentColor"/>
+              <path d="M44 32 Q40 25 37 20 M37 20 Q34 16 32 13 M37 20 Q33 19 30 18 M40 27 Q36 24 33 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
+              <path d="M56 31 Q60 24 63 19 M63 19 Q66 15 68 12 M63 19 Q67 18 70 17 M60 26 Q64 23 67 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
+              <path d="M43 72 Q42 77 41 82" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none"/>
+              <path d="M47 73 Q47 78 46 83" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none"/>
+              <path d="M53 73 Q54 78 54 83" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none"/>
+              <path d="M58 72 Q59 77 60 82" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none"/>
+              <path d="M36 60 Q32 58 31 55 Q32 53 35 55Z" fill="currentColor"/>
             </svg>
             <span className="navbar-logo-text">
               <span className="navbar-logo-primary">Якутия</span>
