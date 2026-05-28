@@ -64,7 +64,6 @@ body {
   min-height: 100dvh;
 }
 
-/* Корневой контейнер React — flex-колонка на всю высоту */
 #root {
   display: flex;
   flex-direction: column;
@@ -94,7 +93,6 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.5rem); }
   border-radius: var(--radius-sm);
 }
 
-/* app-main растягивается, заполняя всё пространство до подвала */
 .app-main {
   padding-top: var(--navbar-height);
   flex: 1;
@@ -829,14 +827,15 @@ section h2 {
 
 .holiday-hero {
   color: white;
+  height: 200px;
   padding: clamp(1.5rem, 3vw, 2.5rem);
   border-radius: var(--radius-xl);
   margin-bottom: 2rem;
   box-shadow: var(--shadow-md);
-  min-height: 160px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  overflow: hidden;
 }
 
 .holiday-hero h1 {
@@ -1266,4 +1265,5 @@ section h2 {
   .holidays-preview-grid { grid-template-columns: 1fr; }
   .hero h1 { font-size: 1.7rem; }
   .navbar-logo-secondary { display: none; }
+  .holiday-hero { height: 160px; }
 }
