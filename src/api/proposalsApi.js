@@ -33,5 +33,7 @@ export async function uploadFiles(files) {
     body: form,
   });
   if (!res.ok) throw new Error('Ошибка загрузки файлов');
-  return res.json();
+  const json = await res.json();
+  // сервер возвращает { ids: [...] } — достаём массив
+  return Array.isArray(json) ? json : (json.ids ?? []);
 }
