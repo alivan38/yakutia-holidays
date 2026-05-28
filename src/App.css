@@ -833,6 +833,10 @@ section h2 {
   border-radius: var(--radius-xl);
   margin-bottom: 2rem;
   box-shadow: var(--shadow-md);
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 .holiday-hero h1 {
