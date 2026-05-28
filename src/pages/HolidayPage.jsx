@@ -17,11 +17,6 @@ const IconArrowLeft = () => (
   </svg>
 );
 
-// Проверяем, является ли строка HTML (содержит теги)
-function isHTML(str) {
-  return str && /<[a-z][\s\S]*>/i.test(str);
-}
-
 export default function HolidayPage() {
   const { id } = useParams();
   const { data: holiday, isLoading, isError } = useHolidayById(id);
@@ -74,15 +69,7 @@ export default function HolidayPage() {
       </div>
 
       <div className="holiday-content">
-        {/* Directus WYSIWYG хранит HTML — отображаем через innerHTML */}
-        {holiday.fullDescription && isHTML(holiday.fullDescription) ? (
-          <div
-            className="description prose"
-            dangerouslySetInnerHTML={{ __html: holiday.fullDescription }}
-          />
-        ) : (
-          <p className="description">{holiday.fullDescription}</p>
-        )}
+        <p className="description">{holiday.fullDescription}</p>
 
         {holiday.tags?.length > 0 && (
           <div className="tags">
