@@ -2,30 +2,17 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export async function fetchApprovedProposals() {
   const res = await fetch(`${API_URL}/api/proposals/approved`);
-  if (!res.ok) return [];
+  if (!res.ok) throw new Error('Ошибка загрузки предложений');
   return res.json();
 }
 
 export async function fetchProposalById(id) {
   const res = await fetch(`${API_URL}/api/proposals/${id}`);
-  if (!res.ok) return null;
+  if (!res.ok) throw new Error('Предложение не найдено');
   return res.json();
 }
 
-export async function uploadProposalFiles(files) {
-  if (!files.length) return [];
-  const form = new FormData();
-  files.forEach((f) => form.append('files', f));
-  const res = await fetch(`${API_URL}/api/proposals/upload`, {
-    method: 'POST',
-    body: form,
-  });
-  if (!res.ok) throw new Error('Ошибка загрузки файлов');
-  const json = await res.json();
-  return json.ids || [];
-}
-
-export async function createProposal(data) {
+export async function submitProposal(data) {
   const res = await fetch(`${API_URL}/api/proposals`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -33,7 +20,18 @@ export async function createProposal(data) {
   });
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err?.error || 'Ошибка сохранения');
+    throw new Error(err?.error || 'Ошибка отправки');
   }
+  return res.json();
+}
+
+export async function uploadFiles(files) {
+  const form = new FormData();
+  files.forEach(f => form.append('files', f));
+  const res = await fetch(`${API_URL}/api/proposals/upload`, {
+    method: 'POST',
+    body: form,
+  });
+  if (!res.ok) throw new Error('Ошибка загрузки файлов');
   return res.json();
 }

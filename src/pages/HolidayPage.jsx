@@ -1,8 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { fetchHolidayById } from '../api/holidaysApi';
-import { fetchProposalById } from '../api/proposalsApi';
-import { getColorByPeople, formatDateLong, resolveImages } from '../constants';
+import { useHolidayById } from '../hooks/useHolidays';
+import { getColorByPeople, formatDateLong } from '../constants';
 
 const DIRECTUS_ASSETS = 'http://localhost:8055/assets';
 
@@ -20,46 +19,8 @@ const IconArrowLeft = () => (
 
 export default function HolidayPage() {
   const { id } = useParams();
-  const [holiday, setHoliday] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data: holiday, isLoading, isError } = useHolidayById(id);
   const [selectedImage, setSelectedImage] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      try {
-        let data;
-        if (id.startsWith('proposal-')) {
-          data = await fetchProposalById(id.replace('proposal-', ''));
-          if (data) data = {
-            ...data,
-            fullDescription: data.description,
-            isProposal: true,
-            date: data.date || null,
-            tags: data.tags || [],
-            images: resolveImages(data),
-          };
-        } else {
-          data = await fetchHolidayById(id);
-          if (data) data = {
-            ...data,
-            images: resolveImages(data),
-            tags: Array.isArray(data.tags)
-              ? data.tags
-              : (data.tags ? data.tags.split(',').map(t => t.trim()) : []),
-            fullDescription: data.full_description || data.description,
-          };
-        }
-        if (!cancelled) setHoliday(data || null);
-      } catch {
-        if (!cancelled) setHoliday(null);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [id]);
 
   useEffect(() => {
     if (!selectedImage) return;
@@ -68,8 +29,22 @@ export default function HolidayPage() {
     return () => document.removeEventListener('keydown', handleEsc);
   }, [selectedImage]);
 
-  if (loading) return <div className="page">Загрузка...</div>;
-  if (!holiday)  return <div className="not-found">Праздник не найден</div>;
+  if (isLoading) return (
+    <div className="holiday-page">
+      <Link to="/" className="back-link">← Назад к списку</Link>
+      <div className="skeleton" style={{ height: '180px', borderRadius: '16px', marginBottom: '2rem' }} />
+      <div className="skeleton skeleton-text" style={{ width: '80%', marginBottom: '1rem' }} />
+      <div className="skeleton skeleton-text" />
+      <div className="skeleton skeleton-text" style={{ width: '60%' }} />
+    </div>
+  );
+
+  if (isError || !holiday) return (
+    <div className="holiday-page">
+      <Link to="/" className="back-link">← Назад к списку</Link>
+      <p style={{ color: 'var(--text-muted)', marginTop: '2rem' }}>⚠️ Праздник не найден или произошла ошибка.</p>
+    </div>
+  );
 
   const images = holiday.images || [];
 
@@ -112,6 +87,7 @@ export default function HolidayPage() {
                   src={`${DIRECTUS_ASSETS}/${imgId}`}
                   alt={`Фото ${idx + 1}`}
                   className="gallery-thumb"
+                  loading="lazy"
                   onClick={() => setSelectedImage({ url: `${DIRECTUS_ASSETS}/${imgId}`, index: idx })}
                 />
               ))}
@@ -127,11 +103,11 @@ export default function HolidayPage() {
             <img src={selectedImage.url} alt={`Фото ${selectedImage.index + 1}`} className="image-modal-img" />
             {images.length > 1 && (
               <div className="image-modal-nav">
-                <button className="image-modal-btn image-modal-prev" onClick={e => { e.stopPropagation(); navigate(-1); }}>
+                <button className="image-modal-btn" onClick={e => { e.stopPropagation(); navigate(-1); }}>
                   <IconArrowLeft />
                 </button>
                 <span className="image-modal-counter">{selectedImage.index + 1} / {images.length}</span>
-                <button className="image-modal-btn image-modal-next" onClick={e => { e.stopPropagation(); navigate(1); }}>
+                <button className="image-modal-btn" onClick={e => { e.stopPropagation(); navigate(1); }}>
                   <IconArrowRight />
                 </button>
               </div>

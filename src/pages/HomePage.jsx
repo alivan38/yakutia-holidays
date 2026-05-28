@@ -1,7 +1,6 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchApprovedProposals } from '../api/proposalsApi';
-import { fetchHolidays } from '../api/holidaysApi';
+import { useHolidays, useApprovedProposals } from '../hooks/useHolidays';
 import {
   MONTH_NAMES, getColorByPeople, truncate, formatDateShort, resolveImages,
 } from '../constants';
@@ -38,7 +37,6 @@ function useTypewriter(
   const [displayed, setDisplayed] = useState('');
   const [wordIndex, setWordIndex] = useState(0);
   const [phase, setPhase] = useState('typing');
-
   const jitter = useCallback(base => base + Math.random() * base * 0.4 - base * 0.2, []);
 
   useEffect(() => {
@@ -65,19 +63,29 @@ function useTypewriter(
   return displayed;
 }
 
+function HolidayCardSkeleton() {
+  return (
+    <div className="holiday-card" style={{ pointerEvents: 'none' }}>
+      <div className="holiday-card-media skeleton" />
+      <div className="holiday-card-body">
+        <div className="skeleton skeleton-text skeleton-heading" />
+        <div className="skeleton skeleton-text" style={{ width: '50%' }} />
+        <div className="skeleton skeleton-text" />
+        <div className="skeleton skeleton-text" style={{ width: '70%' }} />
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const [search, setSearch] = useState('');
   const [selectedPeople, setSelectedPeople] = useState('Все');
   const [selectedMonth, setSelectedMonth] = useState('Все');
   const catalogRef = useRef(null);
-  const [holidays, setHolidays] = useState([]);
-  const [approvedProposals, setApprovedProposals] = useState([]);
   const typedWord = useTypewriter(TYPEWRITER_WORDS);
 
-  useEffect(() => {
-    fetchHolidays().then(setHolidays).catch(() => setHolidays([]));
-    fetchApprovedProposals().then(setApprovedProposals).catch(() => setApprovedProposals([]));
-  }, []);
+  const { data: holidays = [], isLoading: loadingHolidays, isError: errorHolidays } = useHolidays();
+  const { data: approvedProposals = [] } = useApprovedProposals();
 
   const allHolidays = useMemo(() => [
     ...holidays,
@@ -157,8 +165,13 @@ export default function HomePage() {
             {MONTH_NAMES.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
+
         <div className="holidays-preview-grid">
-          {filteredHolidays.length > 0 ? filteredHolidays.map(h => (
+          {loadingHolidays ? (
+            Array.from({ length: 6 }).map((_, i) => <HolidayCardSkeleton key={i} />)
+          ) : errorHolidays ? (
+            <p className="no-results">⚠️ Не удалось загрузить праздники. Проверьте подключение к серверу.</p>
+          ) : filteredHolidays.length > 0 ? filteredHolidays.map(h => (
             <Link to={`/holiday/${h.id}`} key={h.id} className="holiday-card">
               <div className="holiday-card-media" style={{ backgroundColor: getColorByPeople(h.people) }}>
                 <span className="holiday-card-icon">{h.title[0]}</span>
