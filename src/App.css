@@ -621,12 +621,15 @@ section h2 {
    КАРТОЧКИ ПРАЗДНИКОВ
    ============================================================ */
 .holidays-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1.5rem;
+  justify-content: center;
 }
 
 .holiday-card {
+  width: 320px;
+  flex-shrink: 0;
   background: var(--surface);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -699,7 +702,7 @@ section h2 {
 }
 
 .no-results {
-  grid-column: 1 / -1;
+  width: 100%;
   text-align: center;
   color: var(--text-faint);
   padding: 3rem 0;
@@ -1256,14 +1259,14 @@ section h2 {
   .filters { flex-direction: column; align-items: stretch; }
   .filters select { width: 100%; }
 
-  .holidays-preview-grid { grid-template-columns: 1fr 1fr; }
+  .holiday-card { width: 100%; }
 
   .gallery-grid { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 480px) {
-  .holidays-preview-grid { grid-template-columns: 1fr; }
   .hero h1 { font-size: 1.7rem; }
   .navbar-logo-secondary { display: none; }
   .holiday-hero { height: 160px; }
+  .holiday-card { width: 100%; }
 }
