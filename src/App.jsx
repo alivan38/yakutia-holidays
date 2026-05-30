@@ -5,6 +5,7 @@ import HolidayPage from './pages/HolidayPage';
 import CalendarPage from './pages/CalendarPage';
 import ContributePage from './pages/ContributePage';
 import './App.css';
+import './DrumPicker.css';
 
 function App() {
   return (

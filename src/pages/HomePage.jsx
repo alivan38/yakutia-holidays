@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useHolidays, useApprovedProposals } from '../hooks/useHolidays';
 import {
-  MONTH_NAMES, getColorByPeople, truncate, formatDateShort, resolveImages,
+  MONTH_NAMES, getColorByPeople, truncate, formatDateShort, formatDateLong, resolveImages,
 } from '../constants';
 import DrumPicker from '../components/DrumPicker';
 
@@ -141,60 +141,77 @@ export default function HomePage() {
     <div className="home-page">
       {/* ── Hero ── */}
       <section className="hero">
-        <div className="hero-bg" />
-        <div className="hero-content">
-          {/* Левая колонка: заголовок + поиск */}
+        {/* Слоистые SVG-фигуры (как в макете Figma) */}
+        <svg className="hero-shape hero-shape-violet" viewBox="0 0 1920 935" preserveAspectRatio="none" fill="none" aria-hidden="true">
+          <path d="M1522.4 450.901C1330.85 520.27 1206.31 615.406 1070.78 744.73C935.244 874.054 751.696 935 457.119 935H0V0H1920V381.532C1920 381.532 1713.95 381.532 1522.4 450.901Z" fill="var(--accent)"/>
+        </svg>
+        <svg className="hero-shape hero-shape-blue" viewBox="0 0 919 755" preserveAspectRatio="none" fill="none" aria-hidden="true">
+          <path d="M918.5 670.5C851.442 705.732 759.423 727.061 725.5 732.5C691.577 737.939 584.413 754.911 454 755H0V0L663.111 1.49406C849.797 223.611 917.256 470.2 918.5 670.5Z" fill="var(--primary)"/>
+        </svg>
+        {/* Декоративные круги */}
+        <span className="hero-circle hero-circle-1" aria-hidden="true" />
+        <span className="hero-circle hero-circle-2" aria-hidden="true" />
+
+        <div className="hero-overlay">
+          {/* Левая колонка: заголовок */}
           <div className="hero-left">
             <h1>Праздники и обряды коренных народов Якутии</h1>
             <div className="hero-subtitle">
-              <span className="hero-subtitle-static">Откройте для себя</span>
+              <span className="hero-subtitle-static">Откройте для себя </span>
               <span className="typewriter-line">
                 <span className="typewriter-word">{typedWord}</span>
-                <span className="typewriter-cursor" aria-hidden="true" />
+                <span className="typewriter-cursor" aria-hidden="true">|</span>
               </span>
             </div>
+          </div>
+
+          {/* Правая колонка: поиск + ближайший праздник */}
+          <div className="hero-right">
             <form onSubmit={handleSearchSubmit} className="hero-search">
+              <svg className="hero-search-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
               <input
                 type="text"
-                placeholder="Поиск праздника..."
+                placeholder="Ысыах, Бакалдын, Хэбденэк…"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="hero-search-input"
+                aria-label="Поиск праздника"
               />
-              <button type="submit" className="hero-search-btn">
-                <svg width="18" height="18" viewBox="0 0 56 56" fill="none">
-                  <path d="M43.5797 45.7492L30.2447 32.4118C24.3126 36.6293 16.1384 35.5977 11.4401 30.0387C6.74176 24.4797 7.08674 16.2479 12.2337 11.1015C17.3793 5.95289 25.6119 5.60642 31.1719 10.3045C36.732 15.0026 37.7641 23.1776 33.5464 29.1102L46.8814 42.4475L43.582 45.7469L43.5797 45.7492ZM22.1317 11.6662C17.707 11.6652 13.8896 14.7711 12.9908 19.1035C12.092 23.436 14.3587 27.8042 18.4186 29.5634C22.4785 31.3227 27.2158 29.9895 29.7623 26.371C32.3087 22.7525 31.9645 17.8433 28.938 14.6155L30.3497 16.0155L28.7584 14.4289L28.7304 14.4009C26.9845 12.6443 24.6083 11.6595 22.1317 11.6662Z" fill="currentColor"/>
+              <button type="submit" className="hero-search-btn" aria-label="Найти">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
-                Найти
               </button>
             </form>
-          </div>
 
-          {/* Правая колонка: ближайший праздник */}
-          {upcoming && (
-            <div className="hero-upcoming">
-              <div className="hero-upcoming-label">Ближайший праздник</div>
-              <div
-                className="hero-upcoming-icon"
-                style={{ background: getColorByPeople(upcoming.people) }}
-              >
-                {upcoming.title[0]}
+            {upcoming && (
+              <div className="hero-upcoming">
+                <span className="upcoming-label">Ближайший праздник</span>
+                <Link to={`/holiday/${upcoming.id}`} className="upcoming-card">
+                  <div
+                    className="upcoming-icon-block"
+                    style={{ background: getColorByPeople(upcoming.people) }}
+                  >
+                    {upcoming.title[0]}
+                  </div>
+                  <div className="upcoming-info">
+                    <div className="upcoming-people">{upcoming.people}</div>
+                    <div className="upcoming-name">{upcoming.title}</div>
+                    <div className="upcoming-date">
+                      {formatDateShort(upcoming.dateObj)} {upcoming.dateObj.getFullYear()}
+                    </div>
+                    <span className="upcoming-countdown">
+                      {daysUntil(upcoming.dateObj) === 0
+                        ? 'Сегодня!'
+                        : `Через ${daysUntil(upcoming.dateObj)} дн.`}
+                    </span>
+                  </div>
+                </Link>
               </div>
-              <div className="hero-upcoming-people">{upcoming.people}</div>
-              <div className="hero-upcoming-title">{upcoming.title}</div>
-              <div className="hero-upcoming-date">
-                {formatDateShort(upcoming.dateObj)} {upcoming.dateObj.getFullYear()}
-              </div>
-              <div className="hero-upcoming-countdown">
-                {daysUntil(upcoming.dateObj) === 0
-                  ? 'Сегодня!'
-                  : `Через ${daysUntil(upcoming.dateObj)} дн.`}
-              </div>
-              <Link to={`/holiday/${upcoming.id}`} className="btn btn-outline hero-upcoming-btn">
-                Подробнее →
-              </Link>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
 
@@ -244,9 +261,15 @@ export default function HomePage() {
                 <span className="holiday-card-icon">{h.title[0]}</span>
               </div>
               <div className="holiday-card-body">
-                <h3>{h.title}</h3>
                 <p className="holiday-card-people">{h.people}</p>
+                <h3 className="holiday-card-title">{h.title}</h3>
                 <p className="holiday-card-desc">{truncate(h.description, 90)}</p>
+                {h.date && (
+                  <div className="holiday-card-date">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    {formatDateLong(h.date)}
+                  </div>
+                )}
                 {h.isProposal && <span className="proposal-dot" title="Недавно добавлен" />}
               </div>
             </Link>
@@ -272,7 +295,12 @@ export default function HomePage() {
         <div className="contribute-content">
           <h2>Знаете неизвестный праздник?</h2>
           <p>Помогите сохранить культурное наследие — расскажите о праздниках и обрядах, которые ещё не описаны на нашем сайте.</p>
-          <Link to="/contribute" className="btn btn-accent">Добавить данные →</Link>
+          <Link to="/contribute" className="btn btn-accent cta-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
+            </svg>
+            Добавить данные
+          </Link>
         </div>
       </section>
 
