@@ -479,20 +479,6 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   opacity: 0.12;
 }
 
-.hero::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 4px;
-  z-index: 1;
-  background: linear-gradient(90deg,
-    var(--accent) 0%,
-    var(--violet) 33%,
-    var(--accent-light) 66%,
-    var(--primary-light) 100%
-  );
-}
-
 .hero-overlay {
   position: relative;
   z-index: 1;
