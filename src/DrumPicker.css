@@ -116,10 +116,15 @@
     border-color var(--duration);
 }
 
-.filter-reset-btn:hover {
+.filter-reset-btn:hover:not(:disabled) {
   background: var(--accent-bg);
   color: var(--accent);
   border-color: var(--accent);
+}
+
+.filter-reset-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* ============================================================

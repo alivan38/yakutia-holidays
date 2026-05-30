@@ -6,6 +6,8 @@ export default function DrumPicker({ items, value, onChange }) {
   const trackRef = useRef(null);
   const containerRef = useRef(null);
   const stateRef = useRef({ virtualPos: 0, idx: 0 });
+  // Последнее значение, которое этот барабан сам выбрал — чтобы не сбрасывать анимацию
+  const lastEmittedRef = useRef(value);
 
   const n = items.length;
 
@@ -63,10 +65,15 @@ export default function DrumPicker({ items, value, onChange }) {
     stateRef.current.virtualPos += dir;
     stateRef.current.idx = ((stateRef.current.virtualPos % n) + n) % n;
     renderTrack();
+    lastEmittedRef.current = items[stateRef.current.idx];
     onChange(items[stateRef.current.idx]);
   }, [n, items, onChange, renderTrack]);
 
   useEffect(() => {
+    // Синхронизируемся только при внешнем изменении value (например, кнопка сброса).
+    // Если value изменилось из-за нашего же клика/прокрутки — не сбиваем анимацию.
+    if (value === lastEmittedRef.current) return;
+    lastEmittedRef.current = value;
     const idx = items.indexOf(value);
     if (idx >= 0) {
       stateRef.current.virtualPos = idx;
@@ -142,11 +149,13 @@ export default function DrumPicker({ items, value, onChange }) {
               data-clone={c}
               data-real={i}
               onClick={() => {
+                // Двигаемся точно к кликнутому элементу:
+                // если он слева — анимация идёт влево, если справа — вправо.
                 const abs = c * n + i;
-                const diff = abs - stateRef.current.virtualPos;
-                stateRef.current.virtualPos += diff;
+                stateRef.current.virtualPos = abs;
                 stateRef.current.idx = i;
                 renderTrack();
+                lastEmittedRef.current = item;
                 onChange(item);
               }}
             >

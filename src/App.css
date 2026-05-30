@@ -72,6 +72,7 @@ body {
   color: var(--text);
   line-height: 1.65;
   min-height: 100dvh;
+  overflow-x: hidden;
 }
 
 #root {
@@ -746,78 +747,6 @@ section h2 {
   box-shadow: 0 0 0 3px rgba(91,61,232,0.12);
 }
 
-/* ── Drum picker ── */
-.drum-picker {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: 60px;
-  overflow: hidden;
-  cursor: ew-resize;
-  user-select: none;
-  max-width: 700px;
-  width: 100%;
-  mask-image: linear-gradient(90deg, transparent 0%, black 12%, black 88%, transparent 100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 12%, black 88%, transparent 100%);
-}
-
-.drum-track {
-  display: flex;
-  align-items: center;
-  transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.drum-item {
-  font-family: var(--font-body);
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 0 1.5rem;
-  white-space: nowrap;
-  color: var(--text);
-  opacity: 0.22;
-  transition: opacity 500ms cubic-bezier(0.16,1,0.3,1), font-size 500ms cubic-bezier(0.16,1,0.3,1), font-weight 500ms, color 500ms;
-  cursor: pointer;
-}
-
-.drum-item.active {
-  opacity: 1;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--primary-dark);
-}
-
-.drum-item.adjacent {
-  opacity: 0.38;
-  font-size: 1rem;
-}
-
-.filter-reset-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: none;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-full);
-  padding: 0.45rem 1rem;
-  cursor: pointer;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 300ms, background 200ms, color 200ms, border-color 200ms;
-}
-
-.filter-reset-btn.visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.filter-reset-btn:hover {
-  background: var(--accent-bg);
-  color: var(--accent);
-  border-color: var(--accent);
-}
 
 /* ============================================================
    КАРТОЧКИ ПРАЗДНИКОВ
