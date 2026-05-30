@@ -219,7 +219,6 @@ export default function HomePage() {
       <section className="drum-section" ref={catalogRef}>
         <div className="drum-filters">
           <div className="drum-row">
-            <span className="drum-label">Народ</span>
             <DrumPicker
               items={allPeoples}
               value={selectedPeople}
@@ -228,7 +227,6 @@ export default function HomePage() {
           </div>
           <div className="drum-divider" />
           <div className="drum-row">
-            <span className="drum-label">Месяц</span>
             <DrumPicker
               items={allMonths}
               value={selectedMonth}
