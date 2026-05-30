@@ -469,7 +469,7 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   max-width: 1400px; max-height: 1400px;
   left: -55vw; top: -25%;
   background: radial-gradient(circle, var(--primary-light) 0%, var(--primary-dark) 70%);
-  opacity: 0.18;
+  opacity: 0.3;
 }
 
 .hero-circle-2 {
@@ -477,7 +477,7 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   max-width: 1200px; max-height: 1200px;
   right: -35vw; bottom: -45%;
   background: radial-gradient(circle, var(--accent-light) 0%, var(--accent) 60%, var(--violet) 100%);
-  opacity: 0.12;
+  opacity: 0.28;
 }
 
 .hero-overlay {
@@ -919,8 +919,8 @@ section h2 {
 .contribute-section {
   background: var(--primary-dark);
   background-image:
-    radial-gradient(ellipse at 80% 50%, rgba(91,61,232,0.35) 0%, transparent 60%),
-    radial-gradient(ellipse at 10% 80%, rgba(26,58,143,0.5) 0%, transparent 50%);
+    radial-gradient(ellipse at 80% 50%, rgba(124,98,255,0.6) 0%, transparent 62%),
+    radial-gradient(ellipse at 10% 80%, rgba(38,81,201,0.7) 0%, transparent 55%);
   border-radius: var(--radius-xl);
   padding: clamp(2.5rem, 6vw, 5rem) clamp(1.5rem, 6vw, 5rem);
   text-align: center;
