@@ -19,8 +19,8 @@ export default function DrumPicker({ items, value, onChange }) {
     const vPos = stateRef.current.virtualPos;
 
     items_els.forEach(el => {
-      const c = parseInt(el.dataset.clone);
-      const r = parseInt(el.dataset.real);
+      const c = parseInt(el.dataset.clone, 10);
+      const r = parseInt(el.dataset.real, 10);
       const absPos = c * n + r;
       const dist = absPos - vPos;
       el.classList.remove('dp-active', 'dp-adjacent');
@@ -31,34 +31,40 @@ export default function DrumPicker({ items, value, onChange }) {
       else el.style.opacity = '0';
     });
 
-    const targetEl = items_els.find(el =>
-      parseInt(el.dataset.clone) * n + parseInt(el.dataset.real) === vPos
-    );
-    if (!targetEl) {
-      stateRef.current.virtualPos = stateRef.current.idx;
-      track.style.transition = 'none';
-      setTimeout(() => { track.style.transition = ''; renderTrack(); }, 30);
-      return;
-    }
+    // Используем requestAnimationFrame чтобы браузер успел пересчитать
+    // offsetLeft/offsetWidth после смены классов (dp-active меняет font-size).
+    requestAnimationFrame(() => {
+      const syncedEls = Array.from(track.querySelectorAll('.dp-item'));
+      const targetEl = syncedEls.find(el =>
+        parseInt(el.dataset.clone, 10) * n + parseInt(el.dataset.real, 10) === vPos
+      );
 
-    let offset = 0;
-    items_els.forEach(el => {
-      const abs = parseInt(el.dataset.clone) * n + parseInt(el.dataset.real);
-      if (abs < vPos) offset += el.offsetWidth;
-    });
-    offset += targetEl.offsetWidth / 2;
-    const cW = container.offsetWidth;
-    track.style.transform = `translateX(${cW / 2 - offset}px)`;
-
-    if (Math.abs(vPos) > 2 * n) {
-      setTimeout(() => {
+      if (!targetEl) {
+        stateRef.current.virtualPos = stateRef.current.idx;
         track.style.transition = 'none';
-        stateRef.current.virtualPos = stateRef.current.virtualPos % n;
-        if (stateRef.current.virtualPos < 0) stateRef.current.virtualPos += n;
-        renderTrack();
-        setTimeout(() => { if (track) track.style.transition = ''; }, 30);
-      }, 520);
-    }
+        setTimeout(() => {
+          track.style.transition = '';
+          renderTrack();
+        }, 30);
+        return;
+      }
+
+      // Центрируем по реальному центру активного элемента,
+      // а не по накопленной сумме ширин (которая устаревает до перерисовки).
+      const targetCenter = targetEl.offsetLeft + targetEl.offsetWidth / 2;
+      const containerCenter = container.offsetWidth / 2;
+      track.style.transform = `translateX(${containerCenter - targetCenter}px)`;
+
+      if (Math.abs(vPos) > 2 * n) {
+        setTimeout(() => {
+          track.style.transition = 'none';
+          stateRef.current.virtualPos = stateRef.current.virtualPos % n;
+          if (stateRef.current.virtualPos < 0) stateRef.current.virtualPos += n;
+          renderTrack();
+          setTimeout(() => { if (track) track.style.transition = ''; }, 30);
+        }, 520);
+      }
+    });
   }, [n]);
 
   const step = useCallback((dir) => {
