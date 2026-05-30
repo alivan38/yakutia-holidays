@@ -60,7 +60,7 @@ export default function HolidayPage() {
 
         <div
           className="holiday-hero"
-          style={{ backgroundColor: holiday.isProposal ? '#27ae60' : getColorByPeople(holiday.people) }}
+          style={{ background: holiday.isProposal ? 'linear-gradient(135deg, #27ae60 0%, #145a32 100%)' : getColorByPeople(holiday.people) }}
         >
           <h1>{holiday.title}</h1>
           <div className="holiday-meta">
