@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 
 // Бесконечный drum-picker (iOS-стиль)
 // Props: items (string[]), value (string), onChange (fn)
@@ -6,41 +6,15 @@ export default function DrumPicker({ items, value, onChange }) {
   const trackRef = useRef(null);
   const containerRef = useRef(null);
   const stateRef = useRef({ virtualPos: 0, idx: 0 });
+  // Последнее значение, которое этот барабан сам выбрал — чтобы не сбрасывать анимацию
   const lastEmittedRef = useRef(value);
 
   const n = items.length;
-
-  const centerActive = useCallback(() => {
-    const track = trackRef.current;
-    const container = containerRef.current;
-    if (!track || !container) return;
-
-    const vPos = stateRef.current.virtualPos;
-    const syncedEls = Array.from(track.querySelectorAll('.dp-item'));
-    const targetEl = syncedEls.find(el =>
-      parseInt(el.dataset.clone, 10) * n + parseInt(el.dataset.real, 10) === vPos
-    );
-    if (!targetEl) return;
-
-    // getBoundingClientRect учитывает текущий transform трека,
-    // поэтому вычитаем его, чтобы получить позицию относительно контейнера.
-    const containerRect = container.getBoundingClientRect();
-    const targetRect = targetEl.getBoundingClientRect();
-    const currentTranslate = getCurrentTranslateX(track);
-
-    const targetCenterInContainer =
-      (targetRect.left - containerRect.left) + targetRect.width / 2;
-    const containerCenter = containerRect.width / 2;
-    const delta = containerCenter - targetCenterInContainer;
-
-    track.style.transform = `translateX(${currentTranslate + delta}px)`;
-  }, [n]);
 
   const renderTrack = useCallback(() => {
     const track = trackRef.current;
     const container = containerRef.current;
     if (!track || !container) return;
-
     const items_els = Array.from(track.querySelectorAll('.dp-item'));
     const vPos = stateRef.current.virtualPos;
 
@@ -57,44 +31,41 @@ export default function DrumPicker({ items, value, onChange }) {
       else el.style.opacity = '0';
     });
 
-    // Ждём перерисовки чтобы font-size dp-active применился,
-    // затем центрируем через реальные координаты элемента.
+    // Используем requestAnimationFrame чтобы браузер успел пересчитать
+    // offsetLeft/offsetWidth после смены классов (dp-active меняет font-size).
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        centerActive();
+      const syncedEls = Array.from(track.querySelectorAll('.dp-item'));
+      const targetEl = syncedEls.find(el =>
+        parseInt(el.dataset.clone, 10) * n + parseInt(el.dataset.real, 10) === vPos
+      );
 
-        if (Math.abs(vPos) > 2 * n) {
-          setTimeout(() => {
-            track.style.transition = 'none';
-            stateRef.current.virtualPos = ((stateRef.current.virtualPos % n) + n) % n;
-            stateRef.current.idx = stateRef.current.virtualPos;
+      if (!targetEl) {
+        stateRef.current.virtualPos = stateRef.current.idx;
+        track.style.transition = 'none';
+        setTimeout(() => {
+          track.style.transition = '';
+          renderTrack();
+        }, 30);
+        return;
+      }
 
-            // Сбрасываем классы и пересчитываем позиции без анимации
-            const els = Array.from(track.querySelectorAll('.dp-item'));
-            const nVPos = stateRef.current.virtualPos;
-            els.forEach(el => {
-              const c = parseInt(el.dataset.clone, 10);
-              const r = parseInt(el.dataset.real, 10);
-              const dist = (c * n + r) - nVPos;
-              el.classList.remove('dp-active', 'dp-adjacent');
-              el.style.opacity = '';
-              if (dist === 0) el.classList.add('dp-active');
-              else if (Math.abs(dist) === 1) el.classList.add('dp-adjacent');
-              else if (Math.abs(dist) <= 2) el.style.opacity = '0.08';
-              else el.style.opacity = '0';
-            });
+      // Центрируем по реальному центру активного элемента,
+      // а не по накопленной сумме ширин (которая устаревает до перерисовки).
+      const targetCenter = targetEl.offsetLeft + targetEl.offsetWidth / 2;
+      const containerCenter = container.offsetWidth / 2;
+      track.style.transform = `translateX(${containerCenter - targetCenter}px)`;
 
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                centerActive();
-                setTimeout(() => { if (track) track.style.transition = ''; }, 30);
-              });
-            });
-          }, 520);
-        }
-      });
+      if (Math.abs(vPos) > 2 * n) {
+        setTimeout(() => {
+          track.style.transition = 'none';
+          stateRef.current.virtualPos = stateRef.current.virtualPos % n;
+          if (stateRef.current.virtualPos < 0) stateRef.current.virtualPos += n;
+          renderTrack();
+          setTimeout(() => { if (track) track.style.transition = ''; }, 30);
+        }, 520);
+      }
     });
-  }, [n, centerActive]);
+  }, [n]);
 
   const step = useCallback((dir) => {
     stateRef.current.virtualPos += dir;
@@ -105,6 +76,8 @@ export default function DrumPicker({ items, value, onChange }) {
   }, [n, items, onChange, renderTrack]);
 
   useEffect(() => {
+    // Синхронизируемся только при внешнем изменении value (например, кнопка сброса).
+    // Если value изменилось из-за нашего же клика/прокрутки — не сбиваем анимацию.
     if (value === lastEmittedRef.current) return;
     lastEmittedRef.current = value;
     const idx = items.indexOf(value);
@@ -182,6 +155,8 @@ export default function DrumPicker({ items, value, onChange }) {
               data-clone={c}
               data-real={i}
               onClick={() => {
+                // Двигаемся точно к кликнутому элементу:
+                // если он слева — анимация идёт влево, если справа — вправо.
                 const abs = c * n + i;
                 stateRef.current.virtualPos = abs;
                 stateRef.current.idx = i;
@@ -199,12 +174,4 @@ export default function DrumPicker({ items, value, onChange }) {
       <div className="dp-fade-right" />
     </div>
   );
-}
-
-// Извлекаем текущий translateX из style.transform без матриц
-function getCurrentTranslateX(el) {
-  const t = el.style.transform;
-  if (!t) return 0;
-  const m = t.match(/translateX\(([^)]+)px\)/);
-  return m ? parseFloat(m[1]) : 0;
 }
