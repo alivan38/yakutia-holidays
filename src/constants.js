@@ -12,17 +12,18 @@ const MONTH_NAMES_GENITIVE = [
   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
 ];
 
-const PEOPLE_COLORS = {
-  'Якуты':   '#C41E3A',
-  'Эвенки':  '#FFD700',
-  'Эвены':   '#87CEEB',
-  'Юкагиры': '#B71C1C',
-  'Долганы': '#CC7722',
-  'Чукчи':   '#9E9E9E',
+// Градиентные фоны для карточек — подобраны под каждый народ
+const PEOPLE_GRADIENTS = {
+  'Якуты':   'linear-gradient(135deg, #c41e3a 0%, #6b0f1a 100%)',
+  'Эвенки':  'linear-gradient(135deg, #e6a817 0%, #a05f00 100%)',
+  'Эвены':   'linear-gradient(135deg, #4a90c4 0%, #1a4a72 100%)',
+  'Юкагиры': 'linear-gradient(135deg, #b71c1c 0%, #4a0000 100%)',
+  'Долганы': 'linear-gradient(135deg, #cc7722 0%, #7a3e00 100%)',
+  'Чукчи':   'linear-gradient(135deg, #757575 0%, #3a3a3a 100%)',
 };
 
 export function getColorByPeople(people) {
-  return PEOPLE_COLORS[people] || '#4A90E2';
+  return PEOPLE_GRADIENTS[people] || 'linear-gradient(135deg, #4a90e2 0%, #1a4a8f 100%)';
 }
 
 export function formatDateShort(dateObj) {
