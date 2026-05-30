@@ -12,18 +12,18 @@ const MONTH_NAMES_GENITIVE = [
   'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
 ];
 
-// Градиентные фоны для карточек — подобраны под каждый народ
+// Яркие градиентные фоны для карточек
 const PEOPLE_GRADIENTS = {
-  'Якуты':   'linear-gradient(135deg, #c41e3a 0%, #6b0f1a 100%)',
-  'Эвенки':  'linear-gradient(135deg, #e6a817 0%, #a05f00 100%)',
-  'Эвены':   'linear-gradient(135deg, #4a90c4 0%, #1a4a72 100%)',
-  'Юкагиры': 'linear-gradient(135deg, #b71c1c 0%, #4a0000 100%)',
-  'Долганы': 'linear-gradient(135deg, #cc7722 0%, #7a3e00 100%)',
-  'Чукчи':   'linear-gradient(135deg, #757575 0%, #3a3a3a 100%)',
+  'Якуты':   'linear-gradient(135deg, #ff3a5c 0%, #c41e3a 60%, #8b0020 100%)',
+  'Эвенки':  'linear-gradient(135deg, #ffd700 0%, #f5a800 60%, #c47a00 100%)',
+  'Эвены':   'linear-gradient(135deg, #40b8ff 0%, #1a7ed4 60%, #0a4a9f 100%)',
+  'Юкагиры': 'linear-gradient(135deg, #ff4444 0%, #cc0000 60%, #7a0000 100%)',
+  'Долганы': 'linear-gradient(135deg, #ff9a2e 0%, #e06800 60%, #a03e00 100%)',
+  'Чукчи':   'linear-gradient(135deg, #9e9e9e 0%, #616161 60%, #2e2e2e 100%)',
 };
 
 export function getColorByPeople(people) {
-  return PEOPLE_GRADIENTS[people] || 'linear-gradient(135deg, #4a90e2 0%, #1a4a8f 100%)';
+  return PEOPLE_GRADIENTS[people] || 'linear-gradient(135deg, #5ba8ff 0%, #2563eb 60%, #1034a6 100%)';
 }
 
 export function formatDateShort(dateObj) {
@@ -73,7 +73,6 @@ export function getCoverImage(data) {
   const imgs = resolveImages(data);
   if (imgs.length === 0) return null;
   const first = imgs[0];
-  // Уже готовый URL — возвращаем как есть, иначе строим путь к ассету Directus
   if (/^https?:\/\//i.test(first)) return first;
   return `${DIRECTUS_ASSETS}/${first}`;
 }
