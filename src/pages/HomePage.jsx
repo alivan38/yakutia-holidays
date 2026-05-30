@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useHolidays, useApprovedProposals } from '../hooks/useHolidays';
 import {
-  MONTH_NAMES, getColorByPeople, truncate, formatDateShort, formatDateLong, resolveImages,
+  MONTH_NAMES, getColorByPeople, truncate, formatDateShort, formatDateLong, resolveImages, getCoverImage,
 } from '../constants';
 import DrumPicker from '../components/DrumPicker';
 
@@ -255,10 +255,29 @@ export default function HomePage() {
             Array.from({ length: 6 }).map((_, i) => <HolidayCardSkeleton key={i} />)
           ) : errorHolidays ? (
             <p className="no-results">⚠️ Не удалось загрузить праздники. Проверьте подключение к серверу.</p>
-          ) : visibleHolidays.length > 0 ? visibleHolidays.map(h => (
+          ) : visibleHolidays.length > 0 ? visibleHolidays.map(h => {
+            const cover = getCoverImage(h);
+            return (
             <Link to={`/holiday/${h.id}`} key={h.id} className="holiday-card">
-              <div className="holiday-card-media" style={{ backgroundColor: getColorByPeople(h.people) }}>
-                <span className="holiday-card-icon">{h.title[0]}</span>
+              <div
+                className={`holiday-card-media${cover ? ' has-image' : ''}`}
+                style={{ backgroundColor: getColorByPeople(h.people) }}
+              >
+                {cover ? (
+                  <img
+                    className="holiday-card-img"
+                    src={cover}
+                    alt={h.title}
+                    loading="lazy"
+                    onError={(e) => {
+                      // Если фото не загрузилось — возвращаемся к градиенту с буквой
+                      e.currentTarget.parentElement.classList.remove('has-image');
+                      e.currentTarget.remove();
+                    }}
+                  />
+                ) : (
+                  <span className="holiday-card-icon">{h.title[0]}</span>
+                )}
               </div>
               <div className="holiday-card-body">
                 <p className="holiday-card-people">{h.people}</p>
@@ -273,7 +292,8 @@ export default function HomePage() {
                 {h.isProposal && <span className="proposal-dot" title="Недавно добавлен" />}
               </div>
             </Link>
-          )) : (
+          );
+          }) : (
             <p className="no-results">Ничего не найдено</p>
           )}
         </div>

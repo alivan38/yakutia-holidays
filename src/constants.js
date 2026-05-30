@@ -64,3 +64,15 @@ export function resolveImages(data) {
   const imgs = parseImages(data.images);
   return imgs.length > 0 ? imgs : parseImages(data.image);
 }
+
+export const DIRECTUS_ASSETS = 'http://localhost:8055/assets';
+
+// Возвращает полный URL первого изображения праздника или null
+export function getCoverImage(data) {
+  const imgs = resolveImages(data);
+  if (imgs.length === 0) return null;
+  const first = imgs[0];
+  // Уже готовый URL — возвращаем как есть, иначе строим путь к ассету Directus
+  if (/^https?:\/\//i.test(first)) return first;
+  return `${DIRECTUS_ASSETS}/${first}`;
+}
