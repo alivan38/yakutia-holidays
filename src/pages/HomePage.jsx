@@ -186,7 +186,7 @@ export default function HomePage() {
               </svg>
               <input
                 type="text"
-                placeholder="Ысыах, Бакалдын, Хэбденэк…"
+                placeholder="Ысыах, Бакалдын, Хэбдэнэк…"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="hero-search-input"
@@ -272,7 +272,7 @@ export default function HomePage() {
             <Link to={`/holiday/${h.id}`} key={h.id} className="holiday-card">
               <div
                 className={`holiday-card-media${cover ? ' has-image' : ''}`}
-                style={{ backgroundColor: getColorByPeople(h.people) }}
+                style={{ background: getColorByPeople(h.people) }}
               >
                 {cover ? (
                   <img
