@@ -753,8 +753,9 @@ section h2 {
    ============================================================ */
 .holidays-preview-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.75rem;
+  /* Флюидная сетка: колонки сами подстраиваются под ширину окна */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: clamp(1.25rem, 2.5vw, 1.75rem);
 }
 
 .holiday-card {
@@ -926,7 +927,8 @@ section h2 {
   overflow: hidden;
   box-shadow: var(--shadow-lg);
   position: relative;
-  margin: 0 1.5rem clamp(2rem, 4vw, 4rem);
+  margin: 0 auto clamp(2rem, 4vw, 4rem);
+  width: calc(100% - 3rem);
   max-width: var(--content-wide);
 }
 
@@ -1416,10 +1418,6 @@ section h2 {
 /* ============================================================
    RESPONSIVE
    ============================================================ */
-@media (max-width: 1024px) {
-  .holidays-preview-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
 @media (max-width: 900px) {
   .hero-overlay {
     grid-template-columns: 1fr;
@@ -1439,17 +1437,14 @@ section h2 {
   .navbar-links { display: none; }
   .navbar-burger { display: flex; }
 
-  .holidays-preview-grid { gap: 1.25rem; }
-
   .contribute-section {
-    margin: 0 0.75rem clamp(1.5rem, 3vw, 3rem);
+    margin: 0 auto clamp(1.5rem, 3vw, 3rem);
+    width: calc(100% - 1.5rem);
     padding: 2.5rem 1.25rem;
   }
 }
 
 @media (max-width: 560px) {
-  .holidays-preview-grid { grid-template-columns: 1fr; }
-
   .upcoming-card { flex-direction: column; text-align: center; }
   .upcoming-icon-block { margin: 0 auto; }
   .upcoming-info { text-align: center; }
