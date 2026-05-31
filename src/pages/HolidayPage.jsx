@@ -4,8 +4,11 @@ import { useHolidayById, useHolidays, useApprovedProposals } from '../hooks/useH
 import { getColorByPeople, formatDateLong } from '../constants';
 import { mergeHolidaysAndProposals, pickRelatedHolidays } from '../utils/mergeHolidays';
 import HolidayRelated from '../components/HolidayRelated';
+import HolidayEvents from '../components/HolidayEvents';
 
-const DIRECTUS_ASSETS = 'http://localhost:8055/assets';
+const DIRECTUS_ASSETS = import.meta.env.VITE_DIRECTUS_URL
+  ? `${import.meta.env.VITE_DIRECTUS_URL}/assets`
+  : 'http://localhost:8055/assets';
 
 const IconArrowRight = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none">
@@ -52,11 +55,13 @@ export default function HolidayPage() {
   if (isError || !holiday) return (
     <div className="holiday-page">
       <Link to="/" className="back-link">&larr; Назад к списку</Link>
-      <p style={{ color: 'var(--text-muted)', marginTop: '2rem' }}>&warning; Праздник не найден или произошла ошибка.</p>
+      <p style={{ color: 'var(--text-muted)', marginTop: '2rem' }}>⚠️ Праздник не найден или произошла ошибка.</p>
     </div>
   );
 
-  const images = holiday.images || [];
+  const images = Array.isArray(holiday.image)
+    ? holiday.image
+    : (holiday.images || []);
 
   const navigate = delta => {
     const next = (selectedImage.index + delta + images.length) % images.length;
@@ -72,7 +77,9 @@ export default function HolidayPage() {
           <div className="holiday-page-main">
             <div
               className="holiday-hero"
-              style={{ background: holiday.isProposal ? 'linear-gradient(135deg, #27ae60 0%, #145a32 100%)' : getColorByPeople(holiday.people) }}
+              style={{ background: holiday.isProposal
+                ? 'linear-gradient(135deg, #27ae60 0%, #145a32 100%)'
+                : getColorByPeople(holiday.people) }}
             >
               <h1>{holiday.title}</h1>
               <div className="holiday-meta">
@@ -82,7 +89,13 @@ export default function HolidayPage() {
             </div>
 
             <div className="holiday-content">
-              <p className="description">{holiday.fullDescription}</p>
+              <p className="description">{holiday.full_description || holiday.description}</p>
+
+              {holiday.region && (
+                <p className="holiday-region">
+                  <strong>Регион:</strong> {holiday.region}
+                </p>
+              )}
 
               {holiday.tags?.length > 0 && (
                 <div className="tags">
@@ -90,6 +103,7 @@ export default function HolidayPage() {
                 </div>
               )}
 
+              {/* Фотогалерея главного изображения */}
               {images.length > 0 && (
                 <div className="holiday-gallery">
                   <h3>Фотографии</h3>
@@ -107,6 +121,9 @@ export default function HolidayPage() {
                   </div>
                 </div>
               )}
+
+              {/* Мероприятия из holiday_events */}
+              <HolidayEvents holidayId={id} />
             </div>
           </div>
 
