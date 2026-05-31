@@ -34,7 +34,7 @@ if (!DIRECTUS_TOKEN) {
 
 /* ── Security headers ── */
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' }, // разрешаем Directus-файлы
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
 /* ── HTTP access log ── */
@@ -148,6 +148,12 @@ app.get('/api/holidays', validateQuery(HolidayQuerySchema), async (req, res) => 
   const params = new URLSearchParams();
   params.set('limit', limit);
   params.set('offset', offset);
+  // Запрашиваем только нужные поля
+  params.set('fields', 'id,title,date,description,month');
+  // Сортировка по месяцу и дате
+  params.set('sort', 'month,date');
+  // Возвращаем total_count для пагинации
+  params.set('meta', 'total_count');
 
   if (search) params.set('filter[title][_icontains]', search);
   if (month !== undefined) params.set('filter[month][_eq]', month);
@@ -160,7 +166,11 @@ app.get('/api/holidays', validateQuery(HolidayQuerySchema), async (req, res) => 
     const json = await r.json();
 
     res.set('Cache-Control', 'public, max-age=300');
-    res.json(json.data || []);
+    // Возвращаем data + meta (total_count)
+    res.json({
+      data: json.data || [],
+      meta: json.meta || {},
+    });
   } catch (err) {
     console.error('[GET /api/holidays]', err);
     res.status(500).json({ error: 'Ошибка загрузки праздников' });
@@ -177,7 +187,7 @@ app.get(
     const { id } = req.params;
     try {
       const r = await fetch(
-        `${DIRECTUS_URL}/items/holidays/${id}`,
+        `${DIRECTUS_URL}/items/holidays/${id}?fields=id,title,date,description,month`,
         { headers: directusHeaders },
       );
       if (!r.ok) return res.status(404).json({ error: 'Праздник не найден' });
@@ -198,7 +208,7 @@ app.get(
 app.get('/api/proposals/approved', async (_req, res) => {
   try {
     const r = await fetch(
-      `${DIRECTUS_URL}/items/propsals?filter[approved][_eq]=true&limit=-1`,
+      `${DIRECTUS_URL}/items/propsals?filter[approved][_eq]=true&limit=-1&fields=id,title,description,date,approved&sort=date`,
       { headers: directusHeaders },
     );
     const json = await r.json();
@@ -219,7 +229,7 @@ app.get(
     const { id } = req.params;
     try {
       const r = await fetch(
-        `${DIRECTUS_URL}/items/propsals/${id}`,
+        `${DIRECTUS_URL}/items/propsals/${id}?fields=id,title,description,date,approved`,
         { headers: directusHeaders },
       );
       if (!r.ok) return res.status(404).json({ error: 'Предложение не найдено' });
@@ -270,15 +280,12 @@ app.post(
 
 /* ════════════════════════════════════════
    POST /api/proposals — создать предложение
-   author_email обязателен; перед сохранением
-   маскируем его в логах (не пишем в консоль)
 ════════════════════════════════════════ */
 app.post(
   '/api/proposals',
   submitLimiter,
   validateBody(ProposalSchema),
   async (req, res) => {
-    // Не логируем email пользователя в консоль (GDPR-best-practice)
     const { author_email, ...safeLog } = req.body;
     console.log('[POST /api/proposals] payload:', safeLog);
 
@@ -294,7 +301,6 @@ app.post(
       }
       const json = await r.json();
 
-      // Возвращаем данные без email (не раскрываем его клиенту повторно)
       const { author_email: _omit, ...publicData } = json.data ?? {};
       res.status(201).json(publicData);
     } catch (err) {
