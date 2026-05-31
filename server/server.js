@@ -148,11 +148,8 @@ app.get('/api/holidays', validateQuery(HolidayQuerySchema), async (req, res) => 
   const params = new URLSearchParams();
   params.set('limit', limit);
   params.set('offset', offset);
-  // Запрашиваем только нужные поля
   params.set('fields', 'id,title,date,description,month');
-  // Сортировка по месяцу и дате
   params.set('sort', 'month,date');
-  // Возвращаем total_count для пагинации
   params.set('meta', 'total_count');
 
   if (search) params.set('filter[title][_icontains]', search);
@@ -166,7 +163,6 @@ app.get('/api/holidays', validateQuery(HolidayQuerySchema), async (req, res) => 
     const json = await r.json();
 
     res.set('Cache-Control', 'public, max-age=300');
-    // Возвращаем data + meta (total_count)
     res.json({
       data: json.data || [],
       meta: json.meta || {},
@@ -198,6 +194,49 @@ app.get(
     } catch (err) {
       console.error('[GET /api/holidays/:id]', err);
       res.status(500).json({ error: 'Ошибка загрузки праздника' });
+    }
+  },
+);
+
+/* ════════════════════════════════════════
+   GET /api/holidays/:id/events
+   Возвращает прошедшие мероприятия для праздника,
+   включая фото/видео через M2M-связь images.
+════════════════════════════════════════ */
+app.get(
+  '/api/holidays/:id/events',
+  validateParams(IdParamSchema),
+  async (req, res) => {
+    const { id } = req.params;
+    const params = new URLSearchParams();
+    params.set('filter[holiday_id][_eq]', id);
+    params.set('filter[status][_eq]', 'published');
+    params.set('fields', [
+      'id',
+      'title',
+      'event_date',
+      'description',
+      'images.directus_files_id.id',
+      'images.directus_files_id.filename_download',
+      'images.directus_files_id.type',
+      'images.directus_files_id.width',
+      'images.directus_files_id.height',
+    ].join(','));
+    params.set('sort', '-event_date'); // новые первыми
+
+    try {
+      const r = await fetch(
+        `${DIRECTUS_URL}/items/holiday_events?${params.toString()}`,
+        { headers: directusHeaders },
+      );
+      if (!r.ok) return res.status(404).json({ error: 'Мероприятия не найдены' });
+      const json = await r.json();
+
+      res.set('Cache-Control', 'public, max-age=60');
+      res.json(json.data || []);
+    } catch (err) {
+      console.error('[GET /api/holidays/:id/events]', err);
+      res.status(500).json({ error: 'Ошибка загрузки мероприятий' });
     }
   },
 );
