@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import multiMonthPlugin from '@fullcalendar/multimonth';
 import { fetchHolidays } from '../api/holidaysApi';
 
 const MIN_YEAR = 2000;
@@ -109,13 +108,13 @@ export default function CalendarPage() {
 
         <FullCalendar
           ref={calendarRef}
-          plugins={[dayGridPlugin, interactionPlugin, multiMonthPlugin]}
-          initialView="multiMonthYear"
+          plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
           initialDate={`${viewYear}-01-01`}
           headerToolbar={{
             left: 'prev,next today',
-            center: '',
-            right: 'multiMonthYear,dayGridMonth',
+            center: 'title',
+            right: '',
           }}
           locale="ru"
           firstDay={1}
