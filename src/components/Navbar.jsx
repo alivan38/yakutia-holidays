@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import NavbarLinkItem from "./NavbarLinkItem";
 
 const NAV_LINKS = [
   { to: "/",          label: "Главная",   icon: "🏠" },
@@ -48,16 +49,13 @@ export default function Navbar() {
 
           <nav className="navbar-links" aria-label="Основная навигация">
             {NAV_LINKS.map((link) => (
-              <NavLink
+              <NavbarLinkItem
                 key={link.to}
                 to={link.to}
                 end={link.to === "/"}
-                className={({ isActive }) =>
-                  `navbar-link${isActive ? " navbar-link--active" : ""}`
-                }
               >
                 {link.label}
-              </NavLink>
+              </NavbarLinkItem>
             ))}
           </nav>
 
@@ -80,17 +78,15 @@ export default function Navbar() {
       >
         <nav className="mobile-menu-links" aria-label="Мобильная навигация">
           {NAV_LINKS.map((link) => (
-            <NavLink
+            <NavbarLinkItem
               key={link.to}
               to={link.to}
               end={link.to === "/"}
-              className={({ isActive }) =>
-                `mobile-menu-link${isActive ? " mobile-menu-link--active" : ""}`
-              }
+              classNameBase="mobile-menu-link"
             >
               <span className="mobile-menu-icon">{link.icon}</span>
               {link.label}
-            </NavLink>
+            </NavbarLinkItem>
           ))}
         </nav>
       </div>

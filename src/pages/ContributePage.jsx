@@ -75,7 +75,14 @@ function MonthDayPicker({ value, onChange }) {
 }
 
 export default function ContributePage() {
-  const [form, setForm] = useState({ title: '', people: PEOPLES[0], date: '', description: '', region: '' });
+  const [form, setForm] = useState({
+    title: '',
+    people: PEOPLES[0],
+    date: '',
+    description: '',
+    region: '',
+    author_email: '',
+  });
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [submitted, setSubmitted] = useState(false);
@@ -111,10 +118,14 @@ export default function ContributePage() {
     try {
       const imageIds = files.length > 0 ? await uploadFiles(files) : [];
       await submitProposal({
-        ...form,
-        date:     form.date || null,
-        region:   form.region || null,
-        images:   imageIds.length > 0 ? imageIds : null,
+        title: form.title,
+        description: form.description,
+        author_name: 'Участник',
+        author_email: form.author_email,
+        holiday_date: form.date || undefined,
+        images: imageIds,
+        people: form.people,
+        region: form.region || null,
         approved: false,
       });
       setSubmitted(true);
@@ -182,6 +193,18 @@ export default function ContributePage() {
           <div className="form-group">
             <label>Регион</label>
             <input type="text" value={form.region} onChange={set('region')} placeholder="Например: Мирнинский район" />
+          </div>
+
+          <div className="form-group">
+            <label>Email *</label>
+            <input
+              type="email"
+              value={form.author_email}
+              onChange={set('author_email')}
+              required
+              autoComplete="email"
+              placeholder="example@mail.ru"
+            />
           </div>
 
           <div className="form-group">

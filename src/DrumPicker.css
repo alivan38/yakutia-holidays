@@ -18,11 +18,11 @@
 
 .drum-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   width: 100%;
   max-width: 860px;
-  gap: 1rem;
+  gap: 2rem;
 }
 
 .drum-col {
@@ -66,8 +66,19 @@
   width: 100%;
   height: 150px;
   overflow: hidden;
-  cursor: ns-resize;
   user-select: none;
+}
+
+/* Зона прокрутки — узкая полоса на выбранном варианте (верх барабана) */
+.dp-scroll-zone {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: min(7.5rem, 72%);
+  height: 6rem;
+  z-index: 3;
+  cursor: ns-resize;
 }
 
 .dp-track {
@@ -172,9 +183,9 @@
   font-family: var(--font-body);
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--scarlet-muted);
   background: none;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--scarlet-border);
   border-radius: var(--radius-full);
   padding: 0.45rem 1.1rem;
   cursor: pointer;
@@ -185,9 +196,9 @@
 }
 
 .filter-reset-btn:hover {
-  background: var(--accent-bg);
-  color: var(--accent);
-  border-color: var(--accent);
+  background: var(--scarlet-bg);
+  color: var(--scarlet);
+  border-color: var(--scarlet);
 }
 
 /* ============================================================

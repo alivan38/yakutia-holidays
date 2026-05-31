@@ -26,6 +26,11 @@
   --text-muted:     #556080;
   --text-faint:     #9aa3bf;
 
+  --scarlet:        #c23e4d;
+  --scarlet-muted:  #9a4a54;
+  --scarlet-bg:     rgba(194, 62, 77, 0.08);
+  --scarlet-border: rgba(194, 62, 77, 0.38);
+
   --border:         #dde1f0;
   --border-light:   #eaecf5;
 
@@ -188,31 +193,51 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
 }
 
 .navbar-link {
-  position: relative;
-  padding: 0.45rem 0.875rem;
+  display: inline-flex;
+  padding: 0;
+  border: none;
   border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 600;
   color: rgba(255,255,255,0.6);
-  transition: color var(--duration), background var(--duration);
+  transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   letter-spacing: 0.01em;
 }
 
-.navbar-link::after {
-  content: '';
+.navbar-link__inner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.875rem;
+  border-radius: inherit;
+}
+
+.navbar-link__outline {
   position: absolute;
-  bottom: 2px;
-  left: 50%; right: 50%;
-  height: 2px;
-  background: var(--accent-light);
-  border-radius: var(--radius-full);
-  transition: left var(--duration) var(--ease), right var(--duration) var(--ease);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.navbar-link__path {
+  fill: none;
+  stroke: var(--accent-light);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
 }
 
 .navbar-link:hover {
   color: #fff;
-  background: rgba(255,255,255,0.07);
+}
+
+.navbar-link__path--on {
+  animation: navbar-outline-draw 0.28s linear forwards;
 }
 
 .navbar-link--active {
@@ -220,9 +245,9 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   font-weight: 700;
 }
 
-.navbar-link--active::after {
-  left: 0.875rem;
-  right: 0.875rem;
+@keyframes navbar-outline-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
 }
 
 .navbar-burger {
@@ -290,23 +315,64 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
 
 .mobile-menu-link {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.875rem 1rem;
+  width: 100%;
+  padding: 0;
+  border: none;
   border-radius: var(--radius-md);
   font-size: 1rem;
   font-weight: 600;
   color: rgba(255,255,255,0.6);
-  transition: color var(--duration), background var(--duration);
+  transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.mobile-menu-link:hover,
-.mobile-menu-link--active {
+.mobile-menu-link__inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border-radius: inherit;
+}
+
+.mobile-menu-link__outline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.mobile-menu-link__path {
+  fill: none;
+  stroke: var(--accent-light);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.mobile-menu-link:hover {
   color: #fff;
-  background: rgba(255,255,255,0.07);
 }
 
-.mobile-menu-link--active { font-weight: 700; color: #fff; }
+.mobile-menu-link__path--on {
+  animation: navbar-outline-draw 0.28s linear forwards;
+}
+
+.mobile-menu-link--active {
+  font-weight: 700;
+  color: #fff;
+}
+
+.mobile-menu-link__text {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
 
 .mobile-menu-icon {
   font-size: 1.15rem;
@@ -453,7 +519,7 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
 }
 
 .hero-subtitle {
-  font-size: clamp(0.95rem, 2vw, 1.25rem);
+  font-size: clamp(1.05rem, 2.25vw, 1.4rem);
   line-height: 1.55;
   font-weight: 400;
   color: var(--text-muted);
@@ -1209,6 +1275,63 @@ section h2 {
   color: var(--primary-dark);
 }
 
+.calendar-year-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: -0.75rem 0 1.25rem;
+}
+
+.calendar-year-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.calendar-year-input {
+  width: 5.5rem;
+  padding: 0.5rem 0.65rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  text-align: center;
+}
+
+.calendar-year-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91,61,232,0.12);
+}
+
+.calendar-year-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--primary-dark);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: background var(--duration), border-color var(--duration);
+}
+
+.calendar-year-btn:hover:not(:disabled) {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+}
+
+.calendar-year-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 /* ============================================================
    ФОРМА (contribute)
    ============================================================ */
@@ -1279,6 +1402,7 @@ section h2 {
 }
 
 .contribute-form input[type="text"],
+.contribute-form input[type="email"],
 .contribute-form select,
 .contribute-form textarea {
   width: 100%;
@@ -1293,7 +1417,8 @@ section h2 {
   transition: border-color var(--duration), box-shadow var(--duration);
 }
 
-.contribute-form input:focus,
+.contribute-form input[type="text"]:focus,
+.contribute-form input[type="email"]:focus,
 .contribute-form select:focus,
 .contribute-form textarea:focus {
   border-color: var(--accent);

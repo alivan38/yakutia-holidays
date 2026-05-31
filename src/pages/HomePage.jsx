@@ -216,7 +216,6 @@ export default function HomePage() {
                 onChange={setSelectedPeople}
               />
             </div>
-            <div className="drum-divider drum-divider-vertical" />
             <div className="drum-col">
               <DrumPicker
                 label="Месяц"

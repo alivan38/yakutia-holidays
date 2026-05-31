@@ -81,8 +81,8 @@ export const ProposalSchema = z.object({
     }, 'Недействительная дата')
     .refine((d) => {
       const year = parseInt(d.split('-')[0], 10);
-      return year >= 1900 && year <= 2100;
-    }, 'Год должен быть от 1900 до 2100')
+      return year >= 1900 && year <= 2060;
+    }, 'Год должен быть от 1900 до 2060')
     .optional(),
 
   images: z

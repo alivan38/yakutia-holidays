@@ -52,6 +52,7 @@ function centerActive(track, _container, targetEl) {
 export default function DrumPicker({ items, value, onChange, label }) {
   const trackRef = useRef(null);
   const containerRef = useRef(null);
+  const scrollZoneRef = useRef(null);
   const stateRef = useRef({ virtualPos: 0, idx: 0 });
   const lastEmittedRef = useRef(value);
   const pendingRef = useRef({ raf: 0, wrapTimer: 0 });
@@ -172,20 +173,22 @@ export default function DrumPicker({ items, value, onChange, label }) {
   }, [renderTrack]);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    const zone = scrollZoneRef.current;
+    if (!zone) return;
     const onWheel = (e) => {
       e.preventDefault();
+      e.stopPropagation();
       step(e.deltaY > 0 ? 1 : -1);
     };
-    container.addEventListener('wheel', onWheel, { passive: false });
-    return () => container.removeEventListener('wheel', onWheel);
+    zone.addEventListener('wheel', onWheel, { passive: false });
+    return () => zone.removeEventListener('wheel', onWheel);
   }, [step]);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    let startY = null, moved = 0;
+    const zone = scrollZoneRef.current;
+    if (!zone) return;
+    let startY = null;
+    let moved = 0;
     const onDown = (e) => { startY = e.clientY; moved = 0; };
     const onMove = (e) => {
       if (startY == null) return;
@@ -194,7 +197,7 @@ export default function DrumPicker({ items, value, onChange, label }) {
       if (Math.abs(moved) > 45) { step(moved < 0 ? 1 : -1); moved = 0; }
     };
     const onUp = () => { startY = null; };
-    container.addEventListener('mousedown', onDown);
+    zone.addEventListener('mousedown', onDown);
     window.addEventListener('mouseup', onUp);
     window.addEventListener('mousemove', onMove);
 
@@ -207,14 +210,14 @@ export default function DrumPicker({ items, value, onChange, label }) {
       moved += dy;
       if (Math.abs(moved) > 34) { step(dy < 0 ? 1 : -1); moved = 0; }
     };
-    container.addEventListener('touchstart', onTouchStart, { passive: true });
-    container.addEventListener('touchmove', onTouchMove, { passive: true });
+    zone.addEventListener('touchstart', onTouchStart, { passive: true });
+    zone.addEventListener('touchmove', onTouchMove, { passive: true });
     return () => {
-      container.removeEventListener('mousedown', onDown);
+      zone.removeEventListener('mousedown', onDown);
       window.removeEventListener('mouseup', onUp);
       window.removeEventListener('mousemove', onMove);
-      container.removeEventListener('touchstart', onTouchStart);
-      container.removeEventListener('touchmove', onTouchMove);
+      zone.removeEventListener('touchstart', onTouchStart);
+      zone.removeEventListener('touchmove', onTouchMove);
     };
   }, [step]);
 
@@ -229,6 +232,11 @@ export default function DrumPicker({ items, value, onChange, label }) {
         </>
       )}
       <div className="dp-container" ref={containerRef}>
+        <div
+          className="dp-scroll-zone"
+          ref={scrollZoneRef}
+          aria-hidden="true"
+        />
       <div className="dp-track" ref={trackRef}>
         {CLONES.map(c =>
           items.map((item, i) => (
