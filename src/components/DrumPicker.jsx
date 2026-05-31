@@ -23,29 +23,33 @@ function findTargetEl(track, vPos, n) {
   );
 }
 
+const ANCHOR_TOP = 36;
+
 function applyItemStyles(els, vPos, n) {
   els.forEach(el => {
     const c = parseInt(el.dataset.clone, 10);
     const r = parseInt(el.dataset.real, 10);
     const dist = c * n + r - vPos;
-    el.classList.remove('dp-active', 'dp-adjacent');
+    el.classList.remove('dp-active', 'dp-adjacent', 'dp-before');
     el.style.opacity = '';
-    if (dist === 0) el.classList.add('dp-active');
-    else if (Math.abs(dist) === 1) el.classList.add('dp-adjacent');
-    else if (Math.abs(dist) <= 2) el.style.opacity = '0.08';
+    if (dist < 0) {
+      el.classList.add('dp-before');
+      el.style.opacity = '0';
+    } else if (dist === 0) el.classList.add('dp-active');
+    else if (dist === 1) el.classList.add('dp-adjacent');
+    else if (dist <= 2) el.style.opacity = '0.08';
     else el.style.opacity = '0';
   });
 }
 
-function centerActive(track, container, targetEl) {
-  const targetCenter = targetEl.offsetLeft + targetEl.offsetWidth / 2;
-  const containerCenter = container.offsetWidth / 2;
-  track.style.transform = `translateX(${containerCenter - targetCenter}px)`;
+function centerActive(track, _container, targetEl) {
+  const targetCenter = targetEl.offsetTop + targetEl.offsetHeight / 2;
+  track.style.transform = `translateY(${ANCHOR_TOP - targetCenter}px)`;
 }
 
-// Бесконечный drum-picker (iOS-стиль)
-// Props: items (string[]), value (string), onChange (fn)
-export default function DrumPicker({ items, value, onChange }) {
+// Бесконечный drum-picker (iOS-стиль, вертикальный)
+// Props: items (string[]), value (string), onChange (fn), label (string)
+export default function DrumPicker({ items, value, onChange, label }) {
   const trackRef = useRef(null);
   const containerRef = useRef(null);
   const stateRef = useRef({ virtualPos: 0, idx: 0 });
@@ -171,9 +175,6 @@ export default function DrumPicker({ items, value, onChange }) {
     const container = containerRef.current;
     if (!container) return;
     const onWheel = (e) => {
-      const rect = container.getBoundingClientRect();
-      const relX = e.clientX - rect.left;
-      if (relX < rect.width / 3 || relX > rect.width * 2 / 3) return;
       e.preventDefault();
       step(e.deltaY > 0 ? 1 : -1);
     };
@@ -184,27 +185,27 @@ export default function DrumPicker({ items, value, onChange }) {
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    let startX = null, moved = 0;
-    const onDown = (e) => { startX = e.clientX; moved = 0; };
+    let startY = null, moved = 0;
+    const onDown = (e) => { startY = e.clientY; moved = 0; };
     const onMove = (e) => {
-      if (startX == null) return;
-      moved += e.clientX - startX;
-      startX = e.clientX;
-      if (Math.abs(moved) > 60) { step(moved < 0 ? 1 : -1); moved = 0; }
+      if (startY == null) return;
+      moved += e.clientY - startY;
+      startY = e.clientY;
+      if (Math.abs(moved) > 45) { step(moved < 0 ? 1 : -1); moved = 0; }
     };
-    const onUp = () => { startX = null; };
+    const onUp = () => { startY = null; };
     container.addEventListener('mousedown', onDown);
     window.addEventListener('mouseup', onUp);
     window.addEventListener('mousemove', onMove);
 
-    let touchStartX = null;
-    const onTouchStart = (e) => { touchStartX = e.touches[0].clientX; moved = 0; };
+    let touchStartY = null;
+    const onTouchStart = (e) => { touchStartY = e.touches[0].clientY; moved = 0; };
     const onTouchMove = (e) => {
-      if (touchStartX == null) return;
-      const dx = e.touches[0].clientX - touchStartX;
-      touchStartX = e.touches[0].clientX;
-      moved += dx;
-      if (Math.abs(moved) > 40) { step(dx < 0 ? 1 : -1); moved = 0; }
+      if (touchStartY == null) return;
+      const dy = e.touches[0].clientY - touchStartY;
+      touchStartY = e.touches[0].clientY;
+      moved += dy;
+      if (Math.abs(moved) > 34) { step(dy < 0 ? 1 : -1); moved = 0; }
     };
     container.addEventListener('touchstart', onTouchStart, { passive: true });
     container.addEventListener('touchmove', onTouchMove, { passive: true });
@@ -220,7 +221,14 @@ export default function DrumPicker({ items, value, onChange }) {
   useEffect(() => () => cancelPending(), [cancelPending]);
 
   return (
-    <div className="dp-container" ref={containerRef}>
+    <div className="dp-picker">
+      {label && (
+        <>
+          <div className="dp-label">{label}</div>
+          <div className="dp-label-divider" aria-hidden="true" />
+        </>
+      )}
+      <div className="dp-container" ref={containerRef}>
       <div className="dp-track" ref={trackRef}>
         {CLONES.map(c =>
           items.map((item, i) => (
@@ -241,6 +249,7 @@ export default function DrumPicker({ items, value, onChange }) {
             </div>
           ))
         )}
+      </div>
       </div>
     </div>
   );
