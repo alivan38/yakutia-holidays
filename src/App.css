@@ -1945,3 +1945,166 @@ section h2 {
   list-style: disc;
   margin-bottom: 0.2rem;
 }
+
+/* ============================================================
+   СОБЫТИЯ ПРАЗДНИКА
+   ============================================================ */
+.holiday-events {
+  margin-top: 2rem;
+}
+
+.holiday-events-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  font-weight: 800;
+  color: var(--primary-dark);
+  margin-bottom: 1rem;
+}
+
+.holiday-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+/* Карточка события */
+.event-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  transition:
+    transform    var(--duration) var(--ease),
+    box-shadow   var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+.event-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(91, 61, 232, 0.25);
+}
+
+/* Левый акцент — время / иконка */
+.event-card-accent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 52px;
+  flex-shrink: 0;
+}
+
+.event-card-time {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.event-card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+/* Основной контент */
+.event-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.event-card-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-card-desc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.event-card-tag {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border: 1px solid rgba(91, 61, 232, 0.18);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.65rem;
+  letter-spacing: 0.03em;
+}
+
+.event-card-location {
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Пустое состояние */
+.holiday-events-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-faint);
+  background: var(--surface-2);
+  border-radius: var(--radius-lg);
+  border: 1.5px dashed var(--border);
+  gap: 0.5rem;
+}
+
+.holiday-events-empty p {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  max-width: 30ch;
+}
+
+@media (max-width: 560px) {
+  .event-card {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .event-card-accent {
+    flex-direction: row;
+    min-width: unset;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .event-card-dot { margin-top: 0; }
+}
