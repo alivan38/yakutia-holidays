@@ -1,0 +1,165 @@
+import { z } from 'zod';
+
+/* ─────────────────────────────────────────
+   Вспомогательные типы
+───────────────────────────────────────── */
+
+// Строка: обрезаем пробелы, не принимаем только пробелы
+const trimmedString = (label) =>
+  z.string({ required_error: `${label} обязательно` }).trim();
+
+// Целое положительное число в URL-параметре
+export const IdParamSchema = z.object({
+  id: z
+    .string()
+    .regex(/^\d+$/, 'ID должен быть числом')
+    .transform(Number)
+    .refine((n) => n > 0, 'ID должен быть больше нуля'),
+});
+
+/* ─────────────────────────────────────────
+   Схема предложения (POST /api/proposals)
+───────────────────────────────────────── */
+export const ProposalSchema = z.object({
+  title: trimmedString('Название')
+    .min(3, 'Название должно содержать не менее 3 символов')
+    .max(200, 'Название не должно превышать 200 символов'),
+
+  description: trimmedString('Описание')
+    .min(10, 'Описание должно содержать не менее 10 символов')
+    .max(5000, 'Описание не должно превышать 5000 символов'),
+
+  author_name: trimmedString('Имя автора')
+    .min(2, 'Имя должно содержать не менее 2 символов')
+    .max(100, 'Имя не должно превышать 100 символов')
+    // Только буквы (включая кириллицу), пробелы и дефисы
+    .regex(
+      /^[\p{L}\s'-]+$/u,
+      'Имя может содержать только буквы, пробелы и дефисы',
+    ),
+
+  author_email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email('Некорректный формат email')
+    .max(200, 'Email слишком длинный')
+    .optional()
+    .or(z.literal('')),
+
+  holiday_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Дата должна быть в формате YYYY-MM-DD')
+    .refine((d) => {
+      const date = new Date(d);
+      return !isNaN(date.getTime());
+    }, 'Недействительная дата')
+    .refine((d) => {
+      const year = parseInt(d.split('-')[0], 10);
+      return year >= 1900 && year <= 2100;
+    }, 'Год должен быть от 1900 до 2100')
+    .optional(),
+
+  images: z
+    .array(z.string().uuid('Некорректный UUID изображения'))
+    .max(10, 'Максимум 10 изображений')
+    .optional()
+    .default([]),
+});
+
+/* ─────────────────────────────────────────
+   Схема query-параметров поиска
+   GET /api/holidays?search=...&month=...&limit=...
+───────────────────────────────────────── */
+export const HolidayQuerySchema = z.object({
+  search: z
+    .string()
+    .trim()
+    .max(100, 'Строка поиска не должна превышать 100 символов')
+    .optional(),
+
+  month: z
+    .string()
+    .regex(/^(0?[1-9]|1[0-2])$/, 'Месяц должен быть от 1 до 12')
+    .transform(Number)
+    .optional(),
+
+  limit: z
+    .string()
+    .regex(/^\d+$/, 'Лимит должен быть числом')
+    .transform(Number)
+    .refine((n) => n >= 1 && n <= 200, 'Лимит должен быть от 1 до 200')
+    .optional()
+    .default('50'),
+
+  offset: z
+    .string()
+    .regex(/^\d+$/, 'Смещение должно быть числом')
+    .transform(Number)
+    .refine((n) => n >= 0, 'Смещение должно быть неотрицательным')
+    .optional()
+    .default('0'),
+});
+
+/* ─────────────────────────────────────────
+   Мidleware-фабрика: валидация тела запроса
+───────────────────────────────────────── */
+export function validateBody(schema) {
+  return (req, res, next) => {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      const errors = result.error.errors.map((e) => ({
+        field: e.path.join('.') || 'root',
+        message: e.message,
+      }));
+      return res.status(400).json({
+        error: 'Ошибка валидации',
+        details: errors,
+      });
+    }
+    req.body = result.data; // перезаписываем очищенными данными
+    next();
+  };
+}
+
+/* ─────────────────────────────────────────
+   Мidleware-фабрика: валидация URL-параметров
+───────────────────────────────────────── */
+export function validateParams(schema) {
+  return (req, res, next) => {
+    const result = schema.safeParse(req.params);
+    if (!result.success) {
+      const errors = result.error.errors.map((e) => ({
+        field: e.path.join('.'),
+        message: e.message,
+      }));
+      return res.status(400).json({
+        error: 'Некорректные параметры запроса',
+        details: errors,
+      });
+    }
+    req.params = result.data;
+    next();
+  };
+}
+
+/* ─────────────────────────────────────────
+   Мidleware-фабрика: валидация query-строки
+───────────────────────────────────────── */
+export function validateQuery(schema) {
+  return (req, res, next) => {
+    const result = schema.safeParse(req.query);
+    if (!result.success) {
+      const errors = result.error.errors.map((e) => ({
+        field: e.path.join('.'),
+        message: e.message,
+      }));
+      return res.status(400).json({
+        error: 'Некорректные параметры фильтрации',
+        details: errors,
+      });
+    }
+    req.query = result.data;
+    next();
+  };
+}
