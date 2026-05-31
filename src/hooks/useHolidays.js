@@ -8,7 +8,8 @@ import { resolveImages } from '../constants';
 export function useHolidays() {
   return useQuery({
     queryKey: ['holidays'],
-    queryFn: fetchHolidays,
+    // fetchHolidays возвращает { data, meta } — берём только массив
+    queryFn: () => fetchHolidays().then(({ data }) => data),
   });
 }
 
