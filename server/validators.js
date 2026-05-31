@@ -63,9 +63,9 @@ export const ProposalSchema = z.object({
   author_name: trimmedString('Имя автора')
     .min(2, 'Имя должно содержать не менее 2 символов')
     .max(100, 'Имя не должно превышать 100 символов')
-    // Только буквы (включая кириллицу), пробелы и дефисы
-    .regex(
-      /^[\p{L}\s'-]+$/u,
+    // Буквы любого языка (включая кириллицу), пробелы и дефисы
+    .refine(
+      (v) => /^[\p{L}\s-]+$/u.test(v),
       'Имя может содержать только буквы, пробелы и дефисы',
     ),
 
@@ -84,6 +84,31 @@ export const ProposalSchema = z.object({
       return year >= 1900 && year <= 2060;
     }, 'Год должен быть от 1900 до 2060')
     .optional(),
+
+  holiday_id: z
+    .number({ invalid_type_error: 'holiday_id должен быть числом' })
+    .int('holiday_id должен быть целым числом')
+    .positive('holiday_id должен быть положительным')
+    .optional(),
+
+  holiday_events: z
+    .array(
+      z.object({
+        title: trimmedString('Название события')
+          .min(2, 'Название события должно содержать не менее 2 символов')
+          .max(200, 'Название события не должно превышать 200 символов'),
+        event_date: z
+          .string()
+          .datetime({ offset: true, message: 'Некорректный формат даты события' })
+          .optional(),
+        description: trimmedString('Описание события')
+          .max(2000, 'Описание события не должно превышать 2000 символов')
+          .optional(),
+      })
+    )
+    .max(20, 'Максимум 20 событий')
+    .optional()
+    .default([]),
 
   images: z
     .array(z.string().uuid('Некорректный UUID изображения'))
