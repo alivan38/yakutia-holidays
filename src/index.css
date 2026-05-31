@@ -1,2 +1,21 @@
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; }
+
+/* Glow-эффект фона в стиле Vercel/Stripe */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 10%, rgba(120, 60, 220, 0.18), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 90% 85%, rgba(30, 130, 220, 0.15), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 55% 50%, rgba(200, 60, 120, 0.08), transparent 70%);
+}
+
+/* Все элементы поверх glow */
+#root {
+  position: relative;
+  z-index: 1;
+}
