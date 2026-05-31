@@ -2,22 +2,10 @@
 body {
   margin: 0;
   background-color: #f5f4f0;
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
-/* Glow-эффект фона в стиле Vercel/Stripe */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 60% 50% at 15% 15%, rgba(120, 60, 220, 0.35), transparent 70%),
-    radial-gradient(ellipse 55% 55% at 88% 80%, rgba(30, 130, 220, 0.30), transparent 70%),
-    radial-gradient(ellipse 45% 45% at 55% 45%, rgba(220, 60, 120, 0.18), transparent 70%);
-}
-
-/* Все элементы поверх glow */
 #root {
   position: relative;
   z-index: 1;
