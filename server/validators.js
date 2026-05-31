@@ -8,6 +8,33 @@ import { z } from 'zod';
 const trimmedString = (label) =>
   z.string({ required_error: `${label} обязательно` }).trim();
 
+// Нормализация email: trim + lowercase + валидация
+const emailField = z
+  .string({ required_error: 'Email автора обязателен' })
+  .trim()
+  .toLowerCase()
+  .min(1, 'Email не может быть пустым')
+  .max(254, 'Email слишком длинный (максимум 254 символа)')   // RFC 5321 limit
+  .email('Некорректный формат email')
+  // Дополнительная проверка: домен должен содержать хотя бы одну точку
+  .refine(
+    (v) => /^[^@]+@[^@]+\.[^@]+$/.test(v),
+    'Email должен содержать домен с точкой (например, user@example.com)',
+  )
+  // Блокируем одноразовые/временные сервисы
+  .refine(
+    (v) => {
+      const disposableDomains = [
+        'mailinator.com', 'guerrillamail.com', 'tempmail.com',
+        'throwaway.email', 'yopmail.com', 'sharklasers.com',
+        'guerrillamailblock.com', 'grr.la', 'spam4.me',
+      ];
+      const domain = v.split('@')[1] ?? '';
+      return !disposableDomains.includes(domain);
+    },
+    'Одноразовые email-адреса не принимаются',
+  );
+
 // Целое положительное число в URL-параметре
 export const IdParamSchema = z.object({
   id: z
@@ -38,14 +65,8 @@ export const ProposalSchema = z.object({
       'Имя может содержать только буквы, пробелы и дефисы',
     ),
 
-  author_email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .email('Некорректный формат email')
-    .max(200, 'Email слишком длинный')
-    .optional()
-    .or(z.literal('')),
+  // ── author_email: теперь обязательное поле ──
+  author_email: emailField,
 
   holiday_date: z
     .string()

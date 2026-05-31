@@ -38,7 +38,6 @@ app.use(helmet({
 }));
 
 /* ── HTTP access log ── */
-// в продакшне — короткий формат «combined», в dev — цветной «dev»
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 /* ── Gzip-сжатие ответов ── */
@@ -50,7 +49,6 @@ const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
 
 app.use(cors({
   origin: (origin, cb) => {
-    // разрешаем запросы без origin (curl, Postman) и из белого списка
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
     cb(new Error(`CORS: origin ${origin} не разрешён`));
   },
@@ -114,18 +112,16 @@ const directusHeaders = {
 };
 
 /* ════════════════════════════════════════
-   GET /api/health — проверка работоспособности
-   Используется Docker healthcheck и мониторингом
+   GET /api/health
 ════════════════════════════════════════ */
 app.get('/api/health', async (_req, res) => {
   const uptimeSeconds = Math.floor((Date.now() - START_TIME.getTime()) / 1000);
 
-  // проверяем доступность Directus
   let directusStatus = 'ok';
   try {
     const r = await fetch(`${DIRECTUS_URL}/server/health`, {
       headers: { Authorization: `Bearer ${DIRECTUS_TOKEN}` },
-      signal: AbortSignal.timeout(3000), // таймаут 3 сек
+      signal: AbortSignal.timeout(3000),
     });
     if (!r.ok) directusStatus = 'degraded';
   } catch {
@@ -139,15 +135,12 @@ app.get('/api/health', async (_req, res) => {
     version: process.env.npm_package_version || '1.0.0',
     uptime: uptimeSeconds,
     timestamp: new Date().toISOString(),
-    services: {
-      directus: directusStatus,
-    },
+    services: { directus: directusStatus },
   });
 });
 
 /* ════════════════════════════════════════
    GET /api/holidays
-   Query: ?search=...&month=1-12&limit=1-200&offset=0
 ════════════════════════════════════════ */
 app.get('/api/holidays', validateQuery(HolidayQuerySchema), async (req, res) => {
   const { search, month, limit, offset } = req.query;
@@ -166,7 +159,7 @@ app.get('/api/holidays', validateQuery(HolidayQuerySchema), async (req, res) => 
     );
     const json = await r.json();
 
-    res.set('Cache-Control', 'public, max-age=300'); // кэш 5 минут
+    res.set('Cache-Control', 'public, max-age=300');
     res.json(json.data || []);
   } catch (err) {
     console.error('[GET /api/holidays]', err);
@@ -240,7 +233,7 @@ app.get(
 );
 
 /* ════════════════════════════════════════
-   POST /api/proposals/upload — загрузка файлов
+   POST /api/proposals/upload
 ════════════════════════════════════════ */
 app.post(
   '/api/proposals/upload',
@@ -277,12 +270,18 @@ app.post(
 
 /* ════════════════════════════════════════
    POST /api/proposals — создать предложение
+   author_email обязателен; перед сохранением
+   маскируем его в логах (не пишем в консоль)
 ════════════════════════════════════════ */
 app.post(
   '/api/proposals',
   submitLimiter,
   validateBody(ProposalSchema),
   async (req, res) => {
+    // Не логируем email пользователя в консоль (GDPR-best-practice)
+    const { author_email, ...safeLog } = req.body;
+    console.log('[POST /api/proposals] payload:', safeLog);
+
     try {
       const r = await fetch(`${DIRECTUS_URL}/items/propsals`, {
         method: 'POST',
@@ -294,9 +293,12 @@ app.post(
         return res.status(400).json({ error: err?.errors?.[0]?.message || 'Ошибка сохранения' });
       }
       const json = await r.json();
-      res.status(201).json(json.data);
+
+      // Возвращаем данные без email (не раскрываем его клиенту повторно)
+      const { author_email: _omit, ...publicData } = json.data ?? {};
+      res.status(201).json(publicData);
     } catch (err) {
-      console.error('[POST /api/proposals]', err);
+      console.error('[POST /api/proposals] server error');
       res.status(500).json({ error: 'Ошибка сервера' });
     }
   },
@@ -308,8 +310,8 @@ app.post(
 app.use((err, _req, res, _next) => {
   if (err instanceof multer.MulterError) {
     const messages = {
-      LIMIT_FILE_SIZE:      'Файл слишком большой. Максимум 10 МБ',
-      LIMIT_FILE_COUNT:     'Максимум 10 файлов за раз',
+      LIMIT_FILE_SIZE:       'Файл слишком большой. Максимум 10 МБ',
+      LIMIT_FILE_COUNT:      'Максимум 10 файлов за раз',
       LIMIT_UNEXPECTED_FILE: 'Неожиданное поле файла',
     };
     return res.status(400).json({
@@ -317,7 +319,7 @@ app.use((err, _req, res, _next) => {
     });
   }
   if (err) {
-    console.error('[unhandled error]', err);
+    console.error('[unhandled error]', err.message);
     return res.status(400).json({ error: err.message });
   }
 });
