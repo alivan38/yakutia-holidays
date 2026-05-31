@@ -4,7 +4,6 @@ import { useHolidayById, useHolidays, useApprovedProposals } from '../hooks/useH
 import { getColorByPeople, formatDateLong } from '../constants';
 import { mergeHolidaysAndProposals, pickRelatedHolidays } from '../utils/mergeHolidays';
 import HolidayRelated from '../components/HolidayRelated';
-import HolidayEvents from '../components/HolidayEvents';
 import HolidayBlock from '../components/HolidayBlock';
 
 const DIRECTUS_ASSETS = import.meta.env.VITE_DIRECTUS_URL
@@ -136,8 +135,6 @@ export default function HolidayPage() {
                 </div>
               )}
             </HolidayBlock>
-
-            <HolidayEvents holidayId={id} heroStyle={heroStyle} />
           </div>
 
           <HolidayRelated holidays={relatedHolidays} />
