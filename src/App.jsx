@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import HolidayPage from './pages/HolidayPage';
 import CalendarPage from './pages/CalendarPage';
 import ContributePage from './pages/ContributePage';
+import PrivacyPage from './pages/PrivacyPage';
 import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
 import './DrumPicker.css';
@@ -18,6 +19,7 @@ function App() {
           <Route path="/holiday/:id" element={<HolidayPage />} />
           <Route path="/calendar"    element={<CalendarPage />} />
           <Route path="/contribute"  element={<ContributePage />} />
+          <Route path="/privacy"     element={<PrivacyPage />} />
           <Route path="*"            element={<NotFoundPage />} />
         </Routes>
       </main>

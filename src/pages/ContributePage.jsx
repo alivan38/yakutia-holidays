@@ -122,7 +122,6 @@ export default function ContributePage() {
       await submitProposal({
         title: form.title,
         description: form.description,
-        author_name: 'Участник',
         author_email: form.author_email,
         holiday_date: form.date || undefined,
         images: imageIds,
@@ -232,12 +231,13 @@ export default function ContributePage() {
           <label className="consent-label">
             <input
               type="checkbox"
+              className="consent-checkbox"
               checked={consent}
               onChange={e => setConsent(e.target.checked)}
             />
-            <span>
-              Я согласен(а) на обработку персональных данных (имя, email) в соответствии с{' '}
-              <a href="/privacy" target="_blank" rel="noopener noreferrer">политикой конфиденциальности</a>{' '}
+            <span className="consent-text">
+              Я согласен(а) на обработку персональных данных (email) в соответствии с{' '}
+              <Link to="/privacy" target="_blank" rel="noopener noreferrer">политикой конфиденциальности</Link>{' '}
               согласно ФЗ-152
             </span>
           </label>
