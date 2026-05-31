@@ -429,53 +429,9 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
    ============================================================ */
 .hero {
   position: relative;
-  background: var(--background);
-  color: white;
-  padding: clamp(3.5rem, 8vw, 6.5rem) 1.5rem clamp(3rem, 7vw, 5.5rem);
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.hero-shape {
-  position: absolute;
-  top: 0;
-  z-index: -2;
-  pointer-events: none;
-}
-
-.hero-shape-violet {
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.hero-shape-blue {
-  left: 0;
-  width: 62%;
-  height: 100%;
-}
-
-.hero-circle {
-  position: absolute;
-  border-radius: 50%;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.hero-circle-1 {
-  width: 90vw; height: 90vw;
-  max-width: 1400px; max-height: 1400px;
-  left: -55vw; top: -25%;
-  background: radial-gradient(circle, var(--primary-light) 0%, var(--primary-dark) 70%);
-  opacity: 0.3;
-}
-
-.hero-circle-2 {
-  width: 80vw; height: 80vw;
-  max-width: 1200px; max-height: 1200px;
-  right: -35vw; bottom: -45%;
-  background: radial-gradient(circle, var(--accent-light) 0%, var(--accent) 60%, var(--violet) 100%);
-  opacity: 0.28;
+  background: transparent;
+  color: var(--text);
+  padding: clamp(2.5rem, 6vw, 4.5rem) 1.5rem clamp(2rem, 5vw, 3.5rem);
 }
 
 .hero-overlay {
@@ -498,7 +454,7 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
 .hero h1 {
   font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 3.6rem);
-  color: white;
+  color: var(--primary-dark);
   font-weight: 900;
   letter-spacing: -0.03em;
   line-height: 1.08;
@@ -508,10 +464,10 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   font-size: clamp(0.95rem, 2vw, 1.25rem);
   line-height: 1.55;
   font-weight: 400;
-  color: rgba(255,255,255,0.72);
+  color: var(--text-muted);
 }
 
-.hero-subtitle-static { color: rgba(255,255,255,0.75); }
+.hero-subtitle-static { color: var(--text-muted); }
 
 .typewriter-line { color: var(--violet-light); font-weight: 700; }
 .typewriter-word { color: var(--violet-light); font-weight: 700; }
@@ -548,20 +504,20 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: rgba(255,255,255,0.10);
-  border: 2px solid rgba(255,255,255,0.18);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0.5rem 0.5rem 0.5rem 1.25rem;
-  backdrop-filter: blur(10px);
-  transition: border-color var(--duration), background var(--duration);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--duration), box-shadow var(--duration);
 }
 
 .hero-search:focus-within {
-  border-color: var(--accent-light);
-  background: rgba(255,255,255,0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91,61,232,0.12);
 }
 
-.hero-search-icon { color: rgba(255,255,255,0.55); flex-shrink: 0; }
+.hero-search-icon { color: var(--text-muted); flex-shrink: 0; }
 
 .hero-search-input {
   flex: 1;
@@ -570,12 +526,12 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   background: transparent;
   font-family: var(--font-body);
   font-size: 1.1rem;
-  color: #fff;
+  color: var(--text);
   outline: none;
   padding: 0.85rem 0;
 }
 
-.hero-search-input::placeholder { color: rgba(255,255,255,0.4); }
+.hero-search-input::placeholder { color: var(--text-faint); }
 
 .hero-search-btn {
   width: 54px; height: 54px;
@@ -602,7 +558,7 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
 .upcoming-label {
   font-size: 0.72rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.5);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 0.6rem;
@@ -610,22 +566,21 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
 }
 
 .upcoming-card {
-  background: linear-gradient(135deg, rgba(13,31,92,0.78), rgba(68,41,208,0.62));
-  border: 1.5px solid rgba(255,255,255,0.18);
-  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
   padding: 1.25rem 1.5rem;
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   transition: transform var(--duration) var(--ease), border-color var(--duration), box-shadow var(--duration);
 }
 
 .upcoming-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(124,98,240,0.6);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91,61,232,0.12), var(--shadow-sm);
 }
 
 .upcoming-icon-block {
@@ -648,7 +603,7 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
 .upcoming-people {
   font-size: 0.72rem;
   font-weight: 700;
-  color: var(--accent-light);
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.2rem;
@@ -658,7 +613,7 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--primary-dark);
   margin-bottom: 0.2rem;
   white-space: nowrap;
   overflow: hidden;
@@ -667,7 +622,7 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
 
 .upcoming-date {
   font-size: 0.82rem;
-  color: rgba(255,255,255,0.72);
+  color: var(--text-muted);
   margin-bottom: 0.35rem;
 }
 
@@ -675,11 +630,11 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   display: inline-block;
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--accent-light);
-  background: rgba(91,61,232,0.22);
+  color: var(--accent);
+  background: var(--accent-bg);
   padding: 0.2rem 0.6rem;
   border-radius: var(--radius-sm);
-  border: 1.5px solid rgba(124,98,240,0.35);
+  border: 1.5px solid rgba(91,61,232,0.2);
 }
 
 /* ============================================================
@@ -1017,6 +972,7 @@ section h2 {
    СТРАНИЦА ПРАЗДНИКА
    ============================================================ */
 .holiday-page {
+  width: 100%;
   max-width: 860px;
   margin: 0 auto;
   padding: clamp(1.5rem, 4vw, 3rem) 1.5rem;
@@ -1025,15 +981,17 @@ section h2 {
 
 .holiday-hero {
   color: white;
-  height: 200px;
+  display: block;
+  width: 100%;
+  min-width: 100%;
+  height: clamp(160px, 22vw, 200px);
+  min-height: clamp(160px, 22vw, 200px);
   flex-shrink: 0;
   padding: clamp(1.5rem, 3vw, 2.5rem);
   border-radius: var(--radius-xl);
   margin-bottom: 2rem;
   box-shadow: var(--shadow-md);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  box-sizing: border-box;
   overflow: hidden;
   position: relative;
 }
@@ -1046,12 +1004,30 @@ section h2 {
   pointer-events: none;
 }
 
+.holiday-hero-skeleton {
+  width: 100%;
+  height: clamp(160px, 22vw, 200px);
+  border-radius: var(--radius-xl);
+  margin-bottom: 2rem;
+}
+
 .holiday-hero h1 {
   font-size: clamp(1.6rem, 4vw, 2.5rem);
   margin-bottom: 0.75rem;
   color: white;
-  position: relative;
+  position: absolute;
+  left: clamp(1.5rem, 3vw, 2.5rem);
+  right: clamp(1.5rem, 3vw, 2.5rem);
+  bottom: 2.5rem;
   z-index: 1;
+  line-height: 1.15;
+}
+
+.holiday-hero .holiday-meta {
+  position: absolute;
+  left: clamp(1.5rem, 3vw, 2.5rem);
+  right: clamp(1.5rem, 3vw, 2.5rem);
+  bottom: clamp(1rem, 2vw, 1.5rem);
 }
 
 .holiday-meta {
@@ -1061,7 +1037,6 @@ section h2 {
   font-size: 0.95rem;
   opacity: 0.9;
   font-family: var(--font-body);
-  position: relative;
   z-index: 1;
 }
 
@@ -1485,7 +1460,6 @@ section h2 {
   }
   .hero-left { align-items: center; }
   .hero-subtitle { text-align: center; }
-  .hero-shape-blue { width: 100%; }
   .upcoming-label { text-align: left; }
 }
 

@@ -1,4 +1,47 @@
-import { useRef, useEffect, useCallback, useState } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
+
+const CLONES = [-3, -2, -1, 0, 1, 2, 3];
+
+/** Ближайшая virtualPos для idx — кратчайший путь по кругу (влево/вправо). */
+function nearestVirtualPos(currentVPos, targetIdx, n) {
+  let best = targetIdx;
+  let bestDist = Math.abs(targetIdx - currentVPos);
+  for (const c of CLONES) {
+    const candidate = c * n + targetIdx;
+    const dist = Math.abs(candidate - currentVPos);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = candidate;
+    }
+  }
+  return best;
+}
+
+function findTargetEl(track, vPos, n) {
+  return Array.from(track.querySelectorAll('.dp-item')).find(el =>
+    parseInt(el.dataset.clone, 10) * n + parseInt(el.dataset.real, 10) === vPos
+  );
+}
+
+function applyItemStyles(els, vPos, n) {
+  els.forEach(el => {
+    const c = parseInt(el.dataset.clone, 10);
+    const r = parseInt(el.dataset.real, 10);
+    const dist = c * n + r - vPos;
+    el.classList.remove('dp-active', 'dp-adjacent');
+    el.style.opacity = '';
+    if (dist === 0) el.classList.add('dp-active');
+    else if (Math.abs(dist) === 1) el.classList.add('dp-adjacent');
+    else if (Math.abs(dist) <= 2) el.style.opacity = '0.08';
+    else el.style.opacity = '0';
+  });
+}
+
+function centerActive(track, container, targetEl) {
+  const targetCenter = targetEl.offsetLeft + targetEl.offsetWidth / 2;
+  const containerCenter = container.offsetWidth / 2;
+  track.style.transform = `translateX(${containerCenter - targetCenter}px)`;
+}
 
 // Бесконечный drum-picker (iOS-стиль)
 // Props: items (string[]), value (string), onChange (fn)
@@ -6,66 +49,81 @@ export default function DrumPicker({ items, value, onChange }) {
   const trackRef = useRef(null);
   const containerRef = useRef(null);
   const stateRef = useRef({ virtualPos: 0, idx: 0 });
-  // Последнее значение, которое этот барабан сам выбрал — чтобы не сбрасывать анимацию
   const lastEmittedRef = useRef(value);
+  const pendingRef = useRef({ raf: 0, wrapTimer: 0 });
+  const scheduleCenterRef = useRef(null);
 
   const n = items.length;
 
-  const renderTrack = useCallback(() => {
-    const track = trackRef.current;
-    const container = containerRef.current;
-    if (!track || !container) return;
-    const items_els = Array.from(track.querySelectorAll('.dp-item'));
-    const vPos = stateRef.current.virtualPos;
+  const cancelPending = useCallback(() => {
+    const p = pendingRef.current;
+    if (p.raf) cancelAnimationFrame(p.raf);
+    if (p.wrapTimer) clearTimeout(p.wrapTimer);
+    p.raf = 0;
+    p.wrapTimer = 0;
+  }, []);
 
-    items_els.forEach(el => {
-      const c = parseInt(el.dataset.clone, 10);
-      const r = parseInt(el.dataset.real, 10);
-      const absPos = c * n + r;
-      const dist = absPos - vPos;
-      el.classList.remove('dp-active', 'dp-adjacent');
-      el.style.opacity = '';
-      if (dist === 0) el.classList.add('dp-active');
-      else if (Math.abs(dist) === 1) el.classList.add('dp-adjacent');
-      else if (Math.abs(dist) <= 2) el.style.opacity = '0.08';
-      else el.style.opacity = '0';
-    });
+  const scheduleCenter = useCallback((track, container, vPos, { animateWrap = true } = {}) => {
+    cancelPending();
 
-    // Используем requestAnimationFrame чтобы браузер успел пересчитать
-    // offsetLeft/offsetWidth после смены классов (dp-active меняет font-size).
-    requestAnimationFrame(() => {
-      const syncedEls = Array.from(track.querySelectorAll('.dp-item'));
-      const targetEl = syncedEls.find(el =>
-        parseInt(el.dataset.clone, 10) * n + parseInt(el.dataset.real, 10) === vPos
-      );
+    const run = () => {
+      pendingRef.current.raf = 0;
+      const els = Array.from(track.querySelectorAll('.dp-item'));
+      const targetEl = findTargetEl(track, vPos, n);
 
       if (!targetEl) {
         stateRef.current.virtualPos = stateRef.current.idx;
+        applyItemStyles(els, stateRef.current.virtualPos, n);
         track.style.transition = 'none';
-        setTimeout(() => {
+        pendingRef.current.wrapTimer = setTimeout(() => {
+          pendingRef.current.wrapTimer = 0;
           track.style.transition = '';
-          renderTrack();
+          scheduleCenterRef.current?.(track, container, stateRef.current.virtualPos, { animateWrap: false });
         }, 30);
         return;
       }
 
-      // Центрируем по реальному центру активного элемента,
-      // а не по накопленной сумме ширин (которая устаревает до перерисовки).
-      const targetCenter = targetEl.offsetLeft + targetEl.offsetWidth / 2;
-      const containerCenter = container.offsetWidth / 2;
-      track.style.transform = `translateX(${containerCenter - targetCenter}px)`;
+      centerActive(track, container, targetEl);
 
-      if (Math.abs(vPos) > 2 * n) {
-        setTimeout(() => {
+      if (animateWrap && Math.abs(vPos) > 2 * n) {
+        pendingRef.current.wrapTimer = setTimeout(() => {
+          pendingRef.current.wrapTimer = 0;
           track.style.transition = 'none';
-          stateRef.current.virtualPos = stateRef.current.virtualPos % n;
-          if (stateRef.current.virtualPos < 0) stateRef.current.virtualPos += n;
-          renderTrack();
-          setTimeout(() => { if (track) track.style.transition = ''; }, 30);
+          stateRef.current.virtualPos = ((stateRef.current.virtualPos % n) + n) % n;
+          stateRef.current.idx = stateRef.current.virtualPos;
+          applyItemStyles(Array.from(track.querySelectorAll('.dp-item')), stateRef.current.virtualPos, n);
+
+          pendingRef.current.raf = requestAnimationFrame(() => {
+            pendingRef.current.raf = requestAnimationFrame(() => {
+              pendingRef.current.raf = 0;
+              const wrapped = findTargetEl(track, stateRef.current.virtualPos, n);
+              if (wrapped) centerActive(track, container, wrapped);
+              setTimeout(() => { track.style.transition = ''; }, 30);
+            });
+          });
         }, 520);
       }
+    };
+
+    // Двойной rAF: дождаться layout после смены dp-active (размер шрифта)
+    pendingRef.current.raf = requestAnimationFrame(() => {
+      pendingRef.current.raf = requestAnimationFrame(run);
     });
-  }, [n]);
+  }, [n, cancelPending]);
+
+  useEffect(() => {
+    scheduleCenterRef.current = scheduleCenter;
+  }, [scheduleCenter]);
+
+  const renderTrack = useCallback((opts = {}) => {
+    const track = trackRef.current;
+    const container = containerRef.current;
+    if (!track || !container || n === 0) return;
+
+    const vPos = stateRef.current.virtualPos;
+    applyItemStyles(Array.from(track.querySelectorAll('.dp-item')), vPos, n);
+    scheduleCenter(track, container, vPos, opts);
+  }, [n, scheduleCenter]);
 
   const step = useCallback((dir) => {
     stateRef.current.virtualPos += dir;
@@ -76,19 +134,39 @@ export default function DrumPicker({ items, value, onChange }) {
   }, [n, items, onChange, renderTrack]);
 
   useEffect(() => {
-    // Синхронизируемся только при внешнем изменении value (например, кнопка сброса).
-    // Если value изменилось из-за нашего же клика/прокрутки — не сбиваем анимацию.
     if (value === lastEmittedRef.current) return;
     lastEmittedRef.current = value;
     const idx = items.indexOf(value);
     if (idx >= 0) {
-      stateRef.current.virtualPos = idx;
+      stateRef.current.virtualPos = nearestVirtualPos(stateRef.current.virtualPos, idx, n);
       stateRef.current.idx = idx;
-      renderTrack();
+      const track = trackRef.current;
+      if (track) track.style.transition = 'none';
+      renderTrack({ animateWrap: false });
+      requestAnimationFrame(() => {
+        if (trackRef.current) trackRef.current.style.transition = '';
+      });
     }
   }, [value, items, renderTrack]);
 
-  // Wheel (только по центральной трети)
+  const itemsKey = items.join('\0');
+  useEffect(() => {
+    const idx = items.indexOf(value);
+    if (idx >= 0) {
+      stateRef.current.idx = idx;
+      stateRef.current.virtualPos = nearestVirtualPos(stateRef.current.virtualPos, idx, n);
+    }
+    renderTrack({ animateWrap: false });
+  }, [itemsKey, renderTrack, value, n]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => renderTrack({ animateWrap: false }));
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, [renderTrack]);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -103,7 +181,6 @@ export default function DrumPicker({ items, value, onChange }) {
     return () => container.removeEventListener('wheel', onWheel);
   }, [step]);
 
-  // Drag (mouse + touch)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -140,14 +217,12 @@ export default function DrumPicker({ items, value, onChange }) {
     };
   }, [step]);
 
-  useEffect(() => { renderTrack(); }, [renderTrack]);
-
-  const clones = [-3, -2, -1, 0, 1, 2, 3];
+  useEffect(() => () => cancelPending(), [cancelPending]);
 
   return (
     <div className="dp-container" ref={containerRef}>
       <div className="dp-track" ref={trackRef}>
-        {clones.map(c =>
+        {CLONES.map(c =>
           items.map((item, i) => (
             <div
               key={`${c}-${i}`}
@@ -155,10 +230,7 @@ export default function DrumPicker({ items, value, onChange }) {
               data-clone={c}
               data-real={i}
               onClick={() => {
-                // Двигаемся точно к кликнутому элементу:
-                // если он слева — анимация идёт влево, если справа — вправо.
-                const abs = c * n + i;
-                stateRef.current.virtualPos = abs;
+                stateRef.current.virtualPos = nearestVirtualPos(stateRef.current.virtualPos, i, n);
                 stateRef.current.idx = i;
                 renderTrack();
                 lastEmittedRef.current = item;
@@ -170,8 +242,6 @@ export default function DrumPicker({ items, value, onChange }) {
           ))
         )}
       </div>
-      <div className="dp-fade-left" />
-      <div className="dp-fade-right" />
     </div>
   );
 }

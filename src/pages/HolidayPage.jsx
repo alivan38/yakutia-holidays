@@ -32,7 +32,7 @@ export default function HolidayPage() {
   if (isLoading) return (
     <div className="holiday-page">
       <Link to="/" className="back-link">&larr; Назад к списку</Link>
-      <div className="skeleton" style={{ height: '180px', borderRadius: '16px', marginBottom: '2rem' }} />
+      <div className="skeleton holiday-hero-skeleton" />
       <div className="skeleton skeleton-text" style={{ width: '80%', marginBottom: '1rem' }} />
       <div className="skeleton skeleton-text" />
       <div className="skeleton skeleton-text" style={{ width: '60%' }} />

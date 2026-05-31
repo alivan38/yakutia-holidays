@@ -34,23 +34,6 @@
   user-select: none;
 }
 
-.dp-fade-left,
-.dp-fade-right {
-  position: absolute;
-  top: 0; bottom: 0;
-  width: 120px;
-  pointer-events: none;
-  z-index: 2;
-}
-.dp-fade-left {
-  left: 0;
-  background: linear-gradient(to right, var(--background) 0%, transparent 100%);
-}
-.dp-fade-right {
-  right: 0;
-  background: linear-gradient(to left, var(--background) 0%, transparent 100%);
-}
-
 .dp-track {
   display: flex;
   align-items: center;
@@ -71,8 +54,6 @@
   flex-shrink: 0;
   transition:
     opacity 400ms cubic-bezier(0.16, 1, 0.3, 1),
-    font-size 400ms cubic-bezier(0.16, 1, 0.3, 1),
-    font-weight 400ms,
     color 400ms;
 }
 
@@ -92,8 +73,15 @@
   width: 100%;
   max-width: 860px;
   height: 1px;
-  background: linear-gradient(to right, transparent, var(--border) 20%, var(--border) 80%, transparent);
-  margin: 0.25rem 0;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--text-faint) 18%,
+    var(--text-faint) 82%,
+    transparent 100%
+  );
+  margin: 0.4rem 0;
+  flex-shrink: 0;
 }
 
 .filter-reset-btn {

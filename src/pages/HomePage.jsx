@@ -141,30 +141,6 @@ export default function HomePage() {
     <div className="home-page">
       {/* ── Hero ── */}
       <section className="hero">
-        {/* Слоистые SVG-фигуры с ярким градиентом (как в макете Figma) */}
-        <svg className="hero-shape hero-shape-violet" viewBox="0 0 1920 935" preserveAspectRatio="none" fill="none" aria-hidden="true">
-          <defs>
-            <linearGradient id="heroViolet" x1="1920" y1="0" x2="200" y2="935" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stopColor="#9f86ff"/>
-              <stop offset="0.5" stopColor="#7c62f0"/>
-              <stop offset="1" stopColor="#7c3aed"/>
-            </linearGradient>
-          </defs>
-          <path d="M1522.4 450.901C1330.85 520.27 1206.31 615.406 1070.78 744.73C935.244 874.054 751.696 935 457.119 935H0V0H1920V381.532C1920 381.532 1713.95 381.532 1522.4 450.901Z" fill="url(#heroViolet)"/>
-        </svg>
-        <svg className="hero-shape hero-shape-blue" viewBox="0 0 919 755" preserveAspectRatio="none" fill="none" aria-hidden="true">
-          <defs>
-            <linearGradient id="heroBlue" x1="0" y1="0" x2="919" y2="755" gradientUnits="userSpaceOnUse">
-              <stop offset="0" stopColor="#3a6be0"/>
-              <stop offset="1" stopColor="#1a3a8f"/>
-            </linearGradient>
-          </defs>
-          <path d="M918.5 670.5C851.442 705.732 759.423 727.061 725.5 732.5C691.577 737.939 584.413 754.911 454 755H0V0L663.111 1.49406C849.797 223.611 917.256 470.2 918.5 670.5Z" fill="url(#heroBlue)"/>
-        </svg>
-        {/* Декоративные круги */}
-        <span className="hero-circle hero-circle-1" aria-hidden="true" />
-        <span className="hero-circle hero-circle-2" aria-hidden="true" />
-
         <div className="hero-overlay">
           {/* Левая колонка: заголовок */}
           <div className="hero-left">
