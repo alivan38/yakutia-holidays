@@ -5,6 +5,9 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import compression from 'compression';
 
 import {
   ProposalSchema,
@@ -19,6 +22,7 @@ dotenv.config();
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
+const START_TIME = new Date();
 
 const DIRECTUS_URL   = process.env.DIRECTUS_URL   || 'http://localhost:8055';
 const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN;
@@ -28,13 +32,35 @@ if (!DIRECTUS_TOKEN) {
   process.exit(1);
 }
 
+/* ── Security headers ── */
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // разрешаем Directus-файлы
+}));
+
+/* ── HTTP access log ── */
+// в продакшне — короткий формат «combined», в dev — цветной «dev»
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+
+/* ── Gzip-сжатие ответов ── */
+app.use(compression());
+
 /* ── CORS ── */
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',').map(o => o.trim());
+
+app.use(cors({
+  origin: (origin, cb) => {
+    // разрешаем запросы без origin (curl, Postman) и из белого списка
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS: origin ${origin} не разрешён`));
+  },
+}));
+
 app.use(express.json({ limit: '1mb' }));
 
 /* ── Rate limiting ── */
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 минут
+  windowMs: 15 * 60 * 1000,
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
@@ -42,7 +68,7 @@ const globalLimiter = rateLimit({
 });
 
 const submitLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 час
+  windowMs: 60 * 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
@@ -50,7 +76,7 @@ const submitLimiter = rateLimit({
 });
 
 const uploadLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 час
+  windowMs: 60 * 60 * 1000,
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
@@ -70,17 +96,14 @@ const ALLOWED_MIME_TYPES = [
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 МБ
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(
-        new Error(
-          `Недопустимый тип файла: ${file.mimetype}. ` +
-          `Разрешены: JPEG, PNG, WEBP, GIF, PDF`,
-        ),
-      );
+      cb(new Error(
+        `Недопустимый тип файла: ${file.mimetype}. Разрешены: JPEG, PNG, WEBP, GIF, PDF`,
+      ));
     }
   },
 });
@@ -89,6 +112,38 @@ const directusHeaders = {
   Authorization: `Bearer ${DIRECTUS_TOKEN}`,
   'Content-Type': 'application/json',
 };
+
+/* ════════════════════════════════════════
+   GET /api/health — проверка работоспособности
+   Используется Docker healthcheck и мониторингом
+════════════════════════════════════════ */
+app.get('/api/health', async (_req, res) => {
+  const uptimeSeconds = Math.floor((Date.now() - START_TIME.getTime()) / 1000);
+
+  // проверяем доступность Directus
+  let directusStatus = 'ok';
+  try {
+    const r = await fetch(`${DIRECTUS_URL}/server/health`, {
+      headers: { Authorization: `Bearer ${DIRECTUS_TOKEN}` },
+      signal: AbortSignal.timeout(3000), // таймаут 3 сек
+    });
+    if (!r.ok) directusStatus = 'degraded';
+  } catch {
+    directusStatus = 'unreachable';
+  }
+
+  const status = directusStatus === 'ok' ? 'ok' : 'degraded';
+
+  res.status(status === 'ok' ? 200 : 503).json({
+    status,
+    version: process.env.npm_package_version || '1.0.0',
+    uptime: uptimeSeconds,
+    timestamp: new Date().toISOString(),
+    services: {
+      directus: directusStatus,
+    },
+  });
+});
 
 /* ════════════════════════════════════════
    GET /api/holidays
@@ -101,12 +156,8 @@ app.get('/api/holidays', validateQuery(HolidayQuerySchema), async (req, res) => 
   params.set('limit', limit);
   params.set('offset', offset);
 
-  if (search) {
-    params.set('filter[title][_icontains]', search);
-  }
-  if (month !== undefined) {
-    params.set('filter[month][_eq]', month);
-  }
+  if (search) params.set('filter[title][_icontains]', search);
+  if (month !== undefined) params.set('filter[month][_eq]', month);
 
   try {
     const r = await fetch(
@@ -114,8 +165,11 @@ app.get('/api/holidays', validateQuery(HolidayQuerySchema), async (req, res) => 
       { headers: directusHeaders },
     );
     const json = await r.json();
+
+    res.set('Cache-Control', 'public, max-age=300'); // кэш 5 минут
     res.json(json.data || []);
-  } catch {
+  } catch (err) {
+    console.error('[GET /api/holidays]', err);
     res.status(500).json({ error: 'Ошибка загрузки праздников' });
   }
 });
@@ -135,8 +189,11 @@ app.get(
       );
       if (!r.ok) return res.status(404).json({ error: 'Праздник не найден' });
       const json = await r.json();
+
+      res.set('Cache-Control', 'public, max-age=300');
       res.json(json.data || null);
-    } catch {
+    } catch (err) {
+      console.error('[GET /api/holidays/:id]', err);
       res.status(500).json({ error: 'Ошибка загрузки праздника' });
     }
   },
@@ -145,7 +202,7 @@ app.get(
 /* ════════════════════════════════════════
    GET /api/proposals/approved
 ════════════════════════════════════════ */
-app.get('/api/proposals/approved', async (req, res) => {
+app.get('/api/proposals/approved', async (_req, res) => {
   try {
     const r = await fetch(
       `${DIRECTUS_URL}/items/propsals?filter[approved][_eq]=true&limit=-1`,
@@ -153,7 +210,8 @@ app.get('/api/proposals/approved', async (req, res) => {
     );
     const json = await r.json();
     res.json(json.data || []);
-  } catch {
+  } catch (err) {
+    console.error('[GET /api/proposals/approved]', err);
     res.status(500).json({ error: 'Ошибка загрузки предложений' });
   }
 });
@@ -174,7 +232,8 @@ app.get(
       if (!r.ok) return res.status(404).json({ error: 'Предложение не найдено' });
       const json = await r.json();
       res.json(json.data || null);
-    } catch {
+    } catch (err) {
+      console.error('[GET /api/proposals/:id]', err);
       res.status(500).json({ error: 'Ошибка загрузки' });
     }
   },
@@ -201,10 +260,7 @@ app.post(
           });
           const r = await fetch(`${DIRECTUS_URL}/files`, {
             method: 'POST',
-            headers: {
-              Authorization: `Bearer ${DIRECTUS_TOKEN}`,
-              ...form.getHeaders(),
-            },
+            headers: { Authorization: `Bearer ${DIRECTUS_TOKEN}`, ...form.getHeaders() },
             body: form,
           });
           const json = await r.json();
@@ -212,7 +268,8 @@ app.post(
         }),
       );
       res.json({ ids: ids.filter(Boolean) });
-    } catch {
+    } catch (err) {
+      console.error('[POST /api/proposals/upload]', err);
       res.status(500).json({ error: 'Ошибка загрузки файлов' });
     }
   },
@@ -234,33 +291,33 @@ app.post(
       });
       if (!r.ok) {
         const err = await r.json();
-        return res
-          .status(400)
-          .json({ error: err?.errors?.[0]?.message || 'Ошибка сохранения' });
+        return res.status(400).json({ error: err?.errors?.[0]?.message || 'Ошибка сохранения' });
       }
       const json = await r.json();
       res.status(201).json(json.data);
-    } catch {
+    } catch (err) {
+      console.error('[POST /api/proposals]', err);
       res.status(500).json({ error: 'Ошибка сервера' });
     }
   },
 );
 
 /* ════════════════════════════════════════
-   Глобальный обработчик ошибок (Multer + остальные)
+   Глобальный обработчик ошибок
 ════════════════════════════════════════ */
 app.use((err, _req, res, _next) => {
   if (err instanceof multer.MulterError) {
     const messages = {
-      LIMIT_FILE_SIZE: 'Файл слишком большой. Максимум 10 МБ',
-      LIMIT_FILE_COUNT: 'Максимум 10 файлов за раз',
+      LIMIT_FILE_SIZE:      'Файл слишком большой. Максимум 10 МБ',
+      LIMIT_FILE_COUNT:     'Максимум 10 файлов за раз',
       LIMIT_UNEXPECTED_FILE: 'Неожиданное поле файла',
     };
-    return res
-      .status(400)
-      .json({ error: messages[err.code] || `Ошибка загрузки файла: ${err.message}` });
+    return res.status(400).json({
+      error: messages[err.code] || `Ошибка загрузки файла: ${err.message}`,
+    });
   }
   if (err) {
+    console.error('[unhandled error]', err);
     return res.status(400).json({ error: err.message });
   }
 });
