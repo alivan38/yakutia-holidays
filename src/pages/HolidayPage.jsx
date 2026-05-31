@@ -5,6 +5,7 @@ import { getColorByPeople, formatDateLong } from '../constants';
 import { mergeHolidaysAndProposals, pickRelatedHolidays } from '../utils/mergeHolidays';
 import HolidayRelated from '../components/HolidayRelated';
 import HolidayEvents from '../components/HolidayEvents';
+import HolidayBlock from '../components/HolidayBlock';
 
 const DIRECTUS_ASSETS = import.meta.env.VITE_DIRECTUS_URL
   ? `${import.meta.env.VITE_DIRECTUS_URL}/assets`
@@ -45,10 +46,16 @@ export default function HolidayPage() {
   if (isLoading) return (
     <div className="holiday-page">
       <Link to="/" className="back-link">&larr; Назад к списку</Link>
-      <div className="skeleton holiday-hero-skeleton" />
-      <div className="skeleton skeleton-text" style={{ width: '80%', marginBottom: '1rem' }} />
-      <div className="skeleton skeleton-text" />
-      <div className="skeleton skeleton-text" style={{ width: '60%' }} />
+      <div className="holiday-block holiday-block--skeleton">
+        <div className="holiday-block__layout">
+          <div className="skeleton holiday-block__hero-skeleton" />
+          <div className="holiday-block__panel">
+            <div className="skeleton skeleton-text" style={{ width: '90%', marginBottom: '1rem' }} />
+            <div className="skeleton skeleton-text" />
+            <div className="skeleton skeleton-text" style={{ width: '75%' }} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 
@@ -68,6 +75,14 @@ export default function HolidayPage() {
     setSelectedImage({ url: `${DIRECTUS_ASSETS}/${images[next]}`, index: next });
   };
 
+  const heroStyle = {
+    background: holiday.isProposal
+      ? 'linear-gradient(135deg, #27ae60 0%, #145a32 100%)'
+      : getColorByPeople(holiday.people),
+  };
+
+  const descriptionText = holiday.full_description || holiday.description || '';
+
   return (
     <>
       <div className="holiday-page">
@@ -75,21 +90,21 @@ export default function HolidayPage() {
 
         <div className="holiday-page-layout">
           <div className="holiday-page-main">
-            <div
-              className="holiday-hero"
-              style={{ background: holiday.isProposal
-                ? 'linear-gradient(135deg, #27ae60 0%, #145a32 100%)'
-                : getColorByPeople(holiday.people) }}
+            <HolidayBlock
+              title={holiday.title}
+              people={holiday.people}
+              date={holiday.date ? formatDateLong(holiday.date) : null}
+              heroStyle={heroStyle}
+              titleTag="h1"
+              className="holiday-block--intro"
             >
-              <h1>{holiday.title}</h1>
-              <div className="holiday-meta">
-                <span className="people">{holiday.people}</span>
-                {holiday.date && <span className="date">{formatDateLong(holiday.date)}</span>}
-              </div>
-            </div>
-
-            <div className="holiday-content">
-              <p className="description">{holiday.full_description || holiday.description}</p>
+              {descriptionText && (
+                <div className="holiday-block__text">
+                  {descriptionText.split('\n').filter(Boolean).map((para, i) => (
+                    <p key={i}>{para}</p>
+                  ))}
+                </div>
+              )}
 
               {holiday.region && (
                 <p className="holiday-region">
@@ -103,7 +118,6 @@ export default function HolidayPage() {
                 </div>
               )}
 
-              {/* Фотогалерея главного изображения */}
               {images.length > 0 && (
                 <div className="holiday-gallery">
                   <h3>Фотографии</h3>
@@ -121,10 +135,9 @@ export default function HolidayPage() {
                   </div>
                 </div>
               )}
+            </HolidayBlock>
 
-              {/* Мероприятия из holiday_events */}
-              <HolidayEvents holidayId={id} />
-            </div>
+            <HolidayEvents holidayId={id} heroStyle={heroStyle} />
           </div>
 
           <HolidayRelated holidays={relatedHolidays} />
