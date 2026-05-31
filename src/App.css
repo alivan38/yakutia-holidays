@@ -1595,3 +1595,146 @@ section h2 {
   .upcoming-icon-block { margin: 0 auto; }
   .upcoming-info { text-align: center; }
 }
+
+/* ============================================================
+   CONSENT CHECKBOX
+   ============================================================ */
+.consent-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  cursor: pointer;
+  padding: 1rem 1.125rem;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--duration) var(--ease),
+    background   var(--duration) var(--ease);
+}
+
+.consent-label:hover {
+  border-color: var(--accent);
+  background: rgba(91,61,232,0.04);
+}
+
+/* Скрываем нативный чекбокс */
+.consent-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  position: relative;
+  transition:
+    border-color  var(--duration) var(--ease),
+    background    var(--duration) var(--ease),
+    box-shadow    var(--duration) var(--ease);
+}
+
+.consent-checkbox:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91,61,232,0.12);
+}
+
+.consent-checkbox:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91,61,232,0.15);
+}
+
+/* Галочка через псевдоэлемент */
+.consent-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 8px;
+  height: 12px;
+  border: 2.5px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.consent-checkbox:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.consent-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  padding-top: 1px;
+}
+
+.consent-text a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--duration);
+}
+
+.consent-text a:hover { color: var(--accent-hover); }
+
+/* ============================================================
+   PRIVACY PAGE
+   ============================================================ */
+.privacy-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) 1.5rem;
+  flex: 1;
+}
+
+.privacy-page h1 {
+  margin-bottom: 0.5rem;
+}
+
+.privacy-updated {
+  font-size: 0.85rem;
+  color: var(--text-faint);
+  margin-bottom: 2.5rem;
+}
+
+.privacy-section {
+  padding: 0 !important;
+  max-width: 100% !important;
+  margin: 0 0 2rem !important;
+}
+
+.privacy-section h2 {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 0.6rem;
+  text-align: left;
+}
+
+.privacy-section p {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.75;
+  margin-bottom: 0.5rem;
+}
+
+.privacy-section ul {
+  padding-left: 1.25rem;
+  margin-top: 0.4rem;
+}
+
+.privacy-section ul li {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.75;
+  list-style: disc;
+  margin-bottom: 0.2rem;
+}
