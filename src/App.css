@@ -436,7 +436,6 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   isolation: isolate;
 }
 
-/* Слоистые SVG-фигуры фона */
 .hero-shape {
   position: absolute;
   top: 0;
@@ -456,7 +455,6 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   height: 100%;
 }
 
-/* Декоративные круги */
 .hero-circle {
   position: absolute;
   border-radius: 50%;
@@ -531,7 +529,6 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   50% { opacity: 0; }
 }
 
-/* ── ПРАВАЯ КОЛОНКА HERO ── */
 .hero-right {
   display: flex;
   flex-direction: column;
@@ -600,7 +597,6 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   box-shadow: 0 8px 24px rgba(91,61,232,0.4);
 }
 
-/* ── БЛИЖАЙШЕЕ СОБЫТИЕ В HERO ── */
 .hero-upcoming { display: block; }
 
 .upcoming-label {
@@ -753,7 +749,6 @@ section h2 {
    ============================================================ */
 .holidays-preview-grid {
   display: grid;
-  /* Флюидная сетка: колонки сами подстраиваются под ширину окна */
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
   gap: clamp(1.25rem, 2.5vw, 1.75rem);
 }
@@ -886,7 +881,6 @@ section h2 {
   font-size: 1rem;
 }
 
-/* ── ПОКАЗАТЬ ЕЩЁ ── */
 .show-more-wrap {
   display: flex;
   justify-content: center;
@@ -961,7 +955,6 @@ section h2 {
 }
 .cta-btn svg { flex-shrink: 0; }
 
-/* ── ОТСТУП МЕЖДУ CTA И ФУТЕРОМ ── */
 .cta-footer-gap { height: clamp(3rem, 6vw, 6rem); }
 
 /* ============================================================
@@ -1347,7 +1340,6 @@ section h2 {
   opacity: 0.75;
 }
 
-/* ── НАРОД + ДАТА В ОДНУ СТРОКУ ── */
 .contribute-inline-row {
   display: flex;
   gap: 0.5rem;
@@ -1414,6 +1406,70 @@ section h2 {
 
 .contribute-success h2 { color: var(--primary-dark); }
 .contribute-success p { color: var(--text-muted); max-width: 420px; }
+
+/* ============================================================
+   404 NOT FOUND PAGE
+   ============================================================ */
+.not-found-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(3rem, 8vw, 6rem) 1.5rem;
+  min-height: calc(100dvh - var(--navbar-height));
+}
+
+.not-found-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  max-width: 480px;
+}
+
+.not-found-code {
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 18vw, 9rem);
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--primary-light), var(--accent), var(--violet-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.04em;
+  user-select: none;
+}
+
+.not-found-title {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  color: var(--primary-dark);
+  margin: 0;
+}
+
+.not-found-desc {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 38ch;
+}
+
+.not-found-desc code {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+  background: var(--surface-2);
+  padding: 0.15em 0.45em;
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  word-break: break-all;
+}
+
+.not-found-btn {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  padding: 0.875rem 2rem;
+}
 
 /* ============================================================
    RESPONSIVE
