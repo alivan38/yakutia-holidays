@@ -88,6 +88,7 @@ export default function ContributePage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [consent, setConsent] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -113,6 +114,7 @@ export default function ContributePage() {
 
   const handleSubmit = async e => {
     e.preventDefault();
+    if (!consent) { setError('Необходимо дать согласие на обработку персональных данных'); return; }
     setError('');
     setLoading(true);
     try {
@@ -227,7 +229,20 @@ export default function ContributePage() {
             </div>
           </div>
 
-          <button type="submit" className="btn" style={{ width: '100%' }} disabled={loading}>
+          <label className="consent-label">
+            <input
+              type="checkbox"
+              checked={consent}
+              onChange={e => setConsent(e.target.checked)}
+            />
+            <span>
+              Я согласен(а) на обработку персональных данных (имя, email) в соответствии с{' '}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer">политикой конфиденциальности</a>{' '}
+              согласно ФЗ-152
+            </span>
+          </label>
+
+          <button type="submit" className="btn" style={{ width: '100%' }} disabled={loading || !consent}>
             {loading ? 'Отправка...' : 'ОТПРАВИТЬ ДАННЫЕ'}
           </button>
         </form>
