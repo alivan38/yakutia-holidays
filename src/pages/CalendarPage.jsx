@@ -17,7 +17,7 @@ export default function CalendarPage() {
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewYear, setViewYear] = useState(() => clampYear(new Date().getFullYear()));
-  const [yearInput, setYearInput] = useState(() => String(clampYear(new Date().getFullYear())));
+  const [yearDraft, setYearDraft] = useState(() => String(clampYear(new Date().getFullYear())));
   const calendarRef = useRef(null);
 
   useEffect(() => {
@@ -26,6 +26,18 @@ export default function CalendarPage() {
       .catch(() => setHolidays([]))
       .finally(() => setLoading(false));
   }, []);
+
+  const goToYear = useCallback((year) => {
+    const next = clampYear(year);
+    setViewYear(next);
+    setYearDraft(String(next));
+    return next;
+  }, []);
+
+  useEffect(() => {
+    const api = calendarRef.current?.getApi();
+    if (api) api.gotoDate(`${viewYear}-01-01`);
+  }, [viewYear]);
 
   const events = useMemo(() => holidays
     .filter(h => h.date)
@@ -40,27 +52,16 @@ export default function CalendarPage() {
       };
     }), [holidays, viewYear]);
 
-  const goToYear = useCallback((year) => {
-    const next = clampYear(year);
-    setViewYear(next);
-    setYearInput(String(next));
-    calendarRef.current?.getApi()?.gotoDate(`${next}-01-01`);
-  }, []);
-
-  const handleYearInputChange = e => {
-    setYearInput(e.target.value);
-  };
-
-  const applyYearInput = () => {
-    const parsed = parseInt(yearInput, 10);
+  const commitYearDraft = () => {
+    const parsed = parseInt(yearDraft, 10);
     if (!Number.isNaN(parsed)) goToYear(parsed);
-    else setYearInput(String(viewYear));
+    else setYearDraft(String(viewYear));
   };
 
-  const handleYearKeyDown = e => {
+  const handleYearKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      applyYearInput();
+      e.currentTarget.blur();
     }
   };
 
@@ -75,23 +76,7 @@ export default function CalendarPage() {
       <div className="calendar-page">
         <h1 className="main-title">Календарь праздников</h1>
 
-        <div className="calendar-year-bar">
-          <label className="calendar-year-label" htmlFor="calendar-year-input">
-            Год
-          </label>
-          <input
-            id="calendar-year-input"
-            className="calendar-year-input"
-            type="number"
-            min={MIN_YEAR}
-            max={MAX_YEAR}
-            step={1}
-            value={yearInput}
-            onChange={handleYearInputChange}
-            onBlur={applyYearInput}
-            onKeyDown={handleYearKeyDown}
-            aria-label={`Год от ${MIN_YEAR} до ${MAX_YEAR}`}
-          />
+        <div className="calendar-year-nav" role="group" aria-label="Выбор года">
           <button
             type="button"
             className="calendar-year-btn"
@@ -99,8 +84,18 @@ export default function CalendarPage() {
             disabled={viewYear <= MIN_YEAR}
             aria-label="Предыдущий год"
           >
-            −
+            ‹
           </button>
+          <input
+            type="text"
+            inputMode="numeric"
+            className="calendar-year-value"
+            value={yearDraft}
+            onChange={e => setYearDraft(e.target.value.replace(/\D/g, '').slice(0, 4))}
+            onBlur={commitYearDraft}
+            onKeyDown={handleYearKeyDown}
+            aria-label={`Год, от ${MIN_YEAR} до ${MAX_YEAR}`}
+          />
           <button
             type="button"
             className="calendar-year-btn"
@@ -108,7 +103,7 @@ export default function CalendarPage() {
             disabled={viewYear >= MAX_YEAR}
             aria-label="Следующий год"
           >
-            +
+            ›
           </button>
         </div>
 
@@ -117,7 +112,11 @@ export default function CalendarPage() {
           plugins={[dayGridPlugin, interactionPlugin, multiMonthPlugin]}
           initialView="multiMonthYear"
           initialDate={`${viewYear}-01-01`}
-          headerToolbar={{ left: 'prev,next today', center: 'title', right: 'multiMonthYear,dayGridMonth' }}
+          headerToolbar={{
+            left: 'prev,next today',
+            center: '',
+            right: 'multiMonthYear,dayGridMonth',
+          }}
           locale="ru"
           firstDay={1}
           events={events}
@@ -128,8 +127,10 @@ export default function CalendarPage() {
           }}
           datesSet={info => {
             const y = clampYear(info.view.currentStart.getFullYear());
-            setViewYear(y);
-            setYearInput(String(y));
+            if (y !== viewYear) {
+              setViewYear(y);
+              setYearDraft(String(y));
+            }
           }}
         />
       </div>
