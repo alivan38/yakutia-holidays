@@ -1,7 +1,9 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { useHolidayById } from '../hooks/useHolidays';
+import { useState, useEffect, useMemo } from 'react';
+import { useHolidayById, useHolidays, useApprovedProposals } from '../hooks/useHolidays';
 import { getColorByPeople, formatDateLong } from '../constants';
+import { mergeHolidaysAndProposals, pickRelatedHolidays } from '../utils/mergeHolidays';
+import HolidayRelated from '../components/HolidayRelated';
 
 const DIRECTUS_ASSETS = 'http://localhost:8055/assets';
 
@@ -20,7 +22,15 @@ const IconArrowLeft = () => (
 export default function HolidayPage() {
   const { id } = useParams();
   const { data: holiday, isLoading, isError } = useHolidayById(id);
+  const { data: holidays = [] } = useHolidays();
+  const { data: approvedProposals = [] } = useApprovedProposals();
   const [selectedImage, setSelectedImage] = useState(null);
+
+  const relatedHolidays = useMemo(() => {
+    if (!holiday) return [];
+    const all = mergeHolidaysAndProposals(holidays, approvedProposals);
+    return pickRelatedHolidays(all, holiday.id, holiday.people);
+  }, [holiday, holidays, approvedProposals]);
 
   useEffect(() => {
     if (!selectedImage) return;
@@ -58,43 +68,49 @@ export default function HolidayPage() {
       <div className="holiday-page">
         <Link to="/" className="back-link">&larr; Назад к списку</Link>
 
-        <div
-          className="holiday-hero"
-          style={{ background: holiday.isProposal ? 'linear-gradient(135deg, #27ae60 0%, #145a32 100%)' : getColorByPeople(holiday.people) }}
-        >
-          <h1>{holiday.title}</h1>
-          <div className="holiday-meta">
-            <span className="people">{holiday.people}</span>
-            {holiday.date && <span className="date">{formatDateLong(holiday.date)}</span>}
-          </div>
-        </div>
-
-        <div className="holiday-content">
-          <p className="description">{holiday.fullDescription}</p>
-
-          {holiday.tags?.length > 0 && (
-            <div className="tags">
-              {holiday.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}
-            </div>
-          )}
-
-          {images.length > 0 && (
-            <div className="holiday-gallery">
-              <h3>Фотографии</h3>
-              <div className="gallery-grid">
-                {images.map((imgId, idx) => (
-                  <img
-                    key={idx}
-                    src={`${DIRECTUS_ASSETS}/${imgId}`}
-                    alt={`Фото ${idx + 1}`}
-                    className="gallery-thumb"
-                    loading="lazy"
-                    onClick={() => setSelectedImage({ url: `${DIRECTUS_ASSETS}/${imgId}`, index: idx })}
-                  />
-                ))}
+        <div className="holiday-page-layout">
+          <div className="holiday-page-main">
+            <div
+              className="holiday-hero"
+              style={{ background: holiday.isProposal ? 'linear-gradient(135deg, #27ae60 0%, #145a32 100%)' : getColorByPeople(holiday.people) }}
+            >
+              <h1>{holiday.title}</h1>
+              <div className="holiday-meta">
+                <span className="people">{holiday.people}</span>
+                {holiday.date && <span className="date">{formatDateLong(holiday.date)}</span>}
               </div>
             </div>
-          )}
+
+            <div className="holiday-content">
+              <p className="description">{holiday.fullDescription}</p>
+
+              {holiday.tags?.length > 0 && (
+                <div className="tags">
+                  {holiday.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}
+                </div>
+              )}
+
+              {images.length > 0 && (
+                <div className="holiday-gallery">
+                  <h3>Фотографии</h3>
+                  <div className="gallery-grid">
+                    {images.map((imgId, idx) => (
+                      <img
+                        key={idx}
+                        src={`${DIRECTUS_ASSETS}/${imgId}`}
+                        alt={`Фото ${idx + 1}`}
+                        className="gallery-thumb"
+                        loading="lazy"
+                        onClick={() => setSelectedImage({ url: `${DIRECTUS_ASSETS}/${imgId}`, index: idx })}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <HolidayRelated holidays={relatedHolidays} />
         </div>
 
         {selectedImage && (

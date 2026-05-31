@@ -228,19 +228,24 @@ export default function ContributePage() {
             </div>
           </div>
 
-          <label className="consent-label">
-            <input
-              type="checkbox"
-              className="consent-checkbox"
-              checked={consent}
-              onChange={e => setConsent(e.target.checked)}
-            />
-            <span className="consent-text">
-              Я согласен(а) на обработку персональных данных (email) в соответствии с{' '}
-              <Link to="/privacy" target="_blank" rel="noopener noreferrer">политикой конфиденциальности</Link>{' '}
-              согласно ФЗ-152
-            </span>
-          </label>
+          <div className="consent-block">
+            <label className="consent-check" htmlFor="consent-pd">
+              <input
+                id="consent-pd"
+                type="checkbox"
+                className="consent-checkbox"
+                checked={consent}
+                onChange={e => setConsent(e.target.checked)}
+              />
+            </label>
+            <label className="consent-text-label" htmlFor="consent-pd">
+              <span className="consent-text">
+                Я согласен(а) на обработку персональных данных (email) в соответствии с{' '}
+                <Link to="/privacy" target="_blank" rel="noopener noreferrer">политикой конфиденциальности</Link>{' '}
+                согласно ФЗ-152
+              </span>
+            </label>
+          </div>
 
           <button type="submit" className="btn" style={{ width: '100%' }} disabled={loading || !consent}>
             {loading ? 'Отправка...' : 'ОТПРАВИТЬ ДАННЫЕ'}
