@@ -590,11 +590,41 @@ cap = doc.add_paragraph(); cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
 cap.paragraph_format.space_after = Pt(6)
 cap.add_run('Листинг серверной части приложения (промежуточный сервер-шлюз, файл server.js)')
 
+def appendix_code(letter, title, path):
+    app_sub('ПРИЛОЖЕНИЕ ' + letter)
+    cap = doc.add_paragraph(); cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    cap.paragraph_format.space_after = Pt(6)
+    cap.add_run(title)
+    with open(path, encoding='utf-8') as f:
+        lines = [ln.rstrip('\n') for ln in f.readlines()]
+    code_plain(lines)
+    return len(lines)
+
 with open('server/server.js', encoding='utf-8') as f:
     srv_lines = [ln.rstrip('\n') for ln in f.readlines()]
 code_plain(srv_lines)
 
+page_break()
+n_b = appendix_code('Б', 'Листинг схем валидации данных (файл validators.js)', 'server/validators.js')
+page_break()
+n_v = appendix_code('В', 'Листинг компонента календаря (файл CalendarPage.jsx)', 'src/pages/CalendarPage.jsx')
+page_break()
+app_sub('ПРИЛОЖЕНИЕ Г')
+capg = doc.add_paragraph(); capg.alignment = WD_ALIGN_PARAGRAPH.CENTER
+capg.paragraph_format.space_after = Pt(6)
+capg.add_run('Конфигурация развёртывания и переменные окружения (docker-compose.yml, .env.example)')
+with open('directus/docker-compose.yml', encoding='utf-8') as f:
+    dc_lines = [ln.rstrip('\n') for ln in f.readlines()]
+code_plain(dc_lines)
+doc.add_paragraph()
+gp = doc.add_paragraph(); gp.alignment = WD_ALIGN_PARAGRAPH.LEFT
+gp.paragraph_format.first_line_indent = INDENT
+gp.add_run('Перечень переменных окружения (файл .env.example):')
+with open('.env.example', encoding='utf-8') as f:
+    env_lines = [ln.rstrip('\n') for ln in f.readlines()]
+code_plain(env_lines)
+
 out = 'ВКР_Календарь_праздников.docx'
 doc.save(out)
 print('Сохранено:', out)
-print('Строк server.js в приложении А:', len(srv_lines))
+print('Строк: server.js=%d, validators.js=%d, CalendarPage.jsx=%d' % (len(srv_lines), n_b, n_v))
