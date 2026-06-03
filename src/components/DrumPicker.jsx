@@ -2,7 +2,6 @@ import { useRef, useEffect, useCallback } from 'react';
 
 const CLONES = [-3, -2, -1, 0, 1, 2, 3];
 
-/** Ближайшая virtualPos для idx — кратчайший путь по кругу (влево/вправо). */
 function nearestVirtualPos(currentVPos, targetIdx, n) {
   let best = targetIdx;
   let bestDist = Math.abs(targetIdx - currentVPos);
@@ -47,8 +46,6 @@ function centerActive(track, _container, targetEl) {
   track.style.transform = `translateY(${ANCHOR_TOP - targetCenter}px)`;
 }
 
-// Бесконечный drum-picker (iOS-стиль, вертикальный)
-// Props: items (string[]), value (string), onChange (fn), label (string)
 export default function DrumPicker({ items, value, onChange, label }) {
   const trackRef = useRef(null);
   const containerRef = useRef(null);
@@ -110,7 +107,6 @@ export default function DrumPicker({ items, value, onChange, label }) {
       }
     };
 
-    // Двойной rAF: дождаться layout после смены dp-active (размер шрифта)
     pendingRef.current.raf = requestAnimationFrame(() => {
       pendingRef.current.raf = requestAnimationFrame(run);
     });

@@ -1,6 +1,3 @@
-/**
- * Блок: сверху цветной hero, снизу белая панель с текстом.
- */
 export default function HolidayBlock({
   title,
   people,

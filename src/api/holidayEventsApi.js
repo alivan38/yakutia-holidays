@@ -1,31 +1,48 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { apiPath } from './baseUrl.js';
 
-/**
- * Загружает список прошедших мероприятий для праздника.
- * Возвращает массив объектов:
- * [{ id, title, event_date, description, images: [{ directus_files_id: { id, type, ... } }] }]
- *
- * @param {number|string} holidayId
- * @returns {Promise<object[]>}
- */
+function formatApiError(payload, fallback = 'Ошибка отправки') {
+  if (payload?.details?.length) {
+    return payload.details.map(d => d.message).join('. ');
+  }
+  return payload?.error || fallback;
+}
+
 export async function fetchHolidayEvents(holidayId) {
-  const res = await fetch(`${API_URL}/api/holidays/${holidayId}/events`);
+  const res = await fetch(apiPath(`/api/holidays/${holidayId}/events`));
   if (!res.ok) throw new Error('Ошибка загрузки мероприятий');
   return res.json();
 }
 
-/**
- * Строит URL для просмотра файла через Directus.
- * @param {string} fileId - UUID файла из directus_files
- * @param {{ width?: number, height?: number, quality?: number }} [transforms]
- * @returns {string}
- */
+export async function submitHolidayEvent(holidayId, data, { captchaToken } = {}) {
+  const res = await fetch(apiPath(`/api/holidays/${holidayId}/events`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...data,
+      ...(captchaToken ? { captcha_token: captchaToken } : {}),
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(formatApiError(err, 'Ошибка отправки'));
+  }
+  return res.json();
+}
+
+export async function uploadEventFiles(files) {
+  const form = new FormData();
+  files.forEach(f => form.append('files', f));
+  const res = await fetch(apiPath('/api/holiday-events/upload'), {
+    method: 'POST',
+    body: form,
+  });
+  if (!res.ok) throw new Error(formatApiError(await res.json().catch(() => ({})), 'Ошибка загрузки файлов'));
+  const json = await res.json();
+  return Array.isArray(json) ? json : (json.ids ?? []);
+}
+
+import { directusAssetUrl } from './directusAssetUrl.js';
+
 export function getEventFileUrl(fileId, transforms = {}) {
-  const base = (import.meta.env.VITE_DIRECTUS_URL || 'http://localhost:8055');
-  const params = new URLSearchParams();
-  if (transforms.width)   params.set('width',   transforms.width);
-  if (transforms.height)  params.set('height',  transforms.height);
-  if (transforms.quality) params.set('quality', transforms.quality);
-  const qs = params.toString();
-  return `${base}/assets/${fileId}${qs ? '?' + qs : ''}`;
+  return directusAssetUrl(fileId, transforms);
 }

@@ -1,6 +1,5 @@
-import { resolveImages } from '../constants';
+import { resolveHolidayDate, resolveImages } from '../constants';
 
-/** Объединяет праздники из каталога и одобренные предложения в один список. */
 export function mergeHolidaysAndProposals(holidays = [], proposals = []) {
   return [
     ...holidays,
@@ -10,7 +9,7 @@ export function mergeHolidaysAndProposals(holidays = [], proposals = []) {
       people: p.people,
       description: p.description,
       fullDescription: p.description,
-      date: p.date || p.holiday_date || '',
+      date: resolveHolidayDate(p),
       tags: p.tags || [],
       images: resolveImages(p),
       isProposal: true,
@@ -18,7 +17,6 @@ export function mergeHolidaysAndProposals(holidays = [], proposals = []) {
   ];
 }
 
-/** До 4 похожих праздников для боковой панели. */
 export function pickRelatedHolidays(allHolidays, currentId, currentPeople, limit = 4) {
   const currentKey = String(currentId);
   return allHolidays

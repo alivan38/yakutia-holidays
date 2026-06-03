@@ -1,8 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap');
 
-/* ============================================================
-   ДИЗАЙН-ТОКЕНЫ — Синяя/Фиолетовая палитра
-   ============================================================ */
 :root {
   --primary:        #1a3a8f;
   --primary-light:  #2651c9;
@@ -58,9 +55,6 @@
   --navbar-height: 68px;
 }
 
-/* ============================================================
-   БАЗОВЫЕ СТИЛИ
-   ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
@@ -116,9 +110,6 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   flex-direction: column;
 }
 
-/* ============================================================
-   NAVBAR
-   ============================================================ */
 .navbar {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -281,9 +272,6 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
 .burger-line--2-open { opacity: 0; transform: scaleX(0); }
 .burger-line--3-open { transform: translateY(-7px) rotate(-45deg); }
 
-/* ============================================================
-   МОБИЛЬНОЕ МЕНЮ
-   ============================================================ */
 .mobile-menu {
   position: fixed;
   top: var(--navbar-height);
@@ -395,9 +383,6 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   to   { opacity: 1; }
 }
 
-/* ============================================================
-   КНОПКИ
-   ============================================================ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -460,9 +445,6 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   border-radius: var(--radius-sm);
 }
 
-/* ============================================================
-   КНОПКА «НАЗАД»
-   ============================================================ */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -482,9 +464,6 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
 .back-link:hover { color: var(--accent); transform: translateX(-3px); }
 .back-link:active { transform: translateX(0); }
 
-/* ============================================================
-   HERO
-   ============================================================ */
 .hero {
   position: relative;
   background: transparent;
@@ -549,9 +528,6 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   gap: 1.25rem;
 }
 
-/* ============================================================
-   ПОИСК В HERO
-   ============================================================ */
 .hero-right {
   display: flex;
   flex-direction: column;
@@ -695,13 +671,36 @@ h3 { font-size: clamp(1.05rem, 2vw, 1.4rem); }
   border: 1.5px solid rgba(91,61,232,0.2);
 }
 
-/* ============================================================
-   СЕКЦИИ
-   ============================================================ */
+.home-page {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
 section {
   padding: clamp(2.5rem, 5vw, 4.5rem) 1.5rem;
-  max-width: var(--content-wide);
+  max-width: min(var(--content-wide), 100%);
   margin: 0 auto;
+  box-sizing: border-box;
+}
+
+section.hero,
+section.drum-section {
+  padding-bottom: 0;
+}
+
+section.hero {
+  padding-top: clamp(3rem, 7vw, 5rem);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+section.drum-section {
+  padding-top: 0;
+}
+
+section.holidays-section {
+  padding-top: clamp(0.75rem, 2vw, 1.25rem);
 }
 
 section h2 {
@@ -718,9 +717,6 @@ section h2 {
   max-width: 800px;
 }
 
-/* ============================================================
-   ФИЛЬТРЫ
-   ============================================================ */
 .filters {
   display: flex;
   gap: 0.75rem;
@@ -757,9 +753,6 @@ section h2 {
 }
 
 
-/* ============================================================
-   КАРТОЧКИ ПРАЗДНИКОВ
-   ============================================================ */
 .holidays-preview-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
@@ -882,6 +875,13 @@ section h2 {
   margin-top: 2px;
 }
 
+.holidays-load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
 .no-results {
   grid-column: 1 / -1;
   width: 100%;
@@ -917,9 +917,6 @@ section h2 {
   box-shadow: 0 6px 20px rgba(91,61,232,0.22);
 }
 
-/* ============================================================
-   CONTRIBUTE (CTA) SECTION
-   ============================================================ */
 .contribute-section {
   background: var(--primary-dark);
   background-image:
@@ -967,9 +964,6 @@ section h2 {
 
 .cta-footer-gap { height: clamp(3rem, 6vw, 6rem); }
 
-/* ============================================================
-   FOOTER
-   ============================================================ */
 .site-footer {
   background: var(--primary-dark);
   color: rgba(255,255,255,0.45);
@@ -1000,9 +994,6 @@ section h2 {
 .site-footer p { font-size: 0.875rem; margin: 0.3rem 0; }
 .copyright { margin-top: 0.5rem; opacity: 0.5; }
 
-/* ============================================================
-   СКЕЛЕТОН
-   ============================================================ */
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
@@ -1023,9 +1014,6 @@ section h2 {
 .skeleton-text { height: 1em; margin-bottom: 0.5rem; }
 .skeleton-heading { height: 1.4em; width: 60%; margin-bottom: 0.75rem; }
 
-/* ============================================================
-   СТРАНИЦА ПРАЗДНИКА
-   ============================================================ */
 .holiday-page {
   width: 100%;
   max-width: var(--content-wide);
@@ -1045,7 +1033,6 @@ section h2 {
   min-width: 0;
 }
 
-/* Блок: hero сверху, панель снизу */
 .holiday-block {
   width: 100%;
   margin-bottom: 0.875rem;
@@ -1100,7 +1087,6 @@ section h2 {
   width: 100%;
 }
 
-/* Градиент за заголовком — заполняет пробел до зоны перехода */
 .holiday-block__hero-head::after {
   content: '';
   position: absolute;
@@ -1487,9 +1473,6 @@ section h2 {
   letter-spacing: 0.03em;
 }
 
-/* ============================================================
-   ГАЛЕРЕЯ
-   ============================================================ */
 .holiday-gallery { margin-top: 2rem; }
 
 .holiday-gallery h3 {
@@ -1536,9 +1519,6 @@ section h2 {
 
 .gallery-img:hover { transform: scale(1.04); }
 
-/* ============================================================
-   МОДАЛЬНОЕ ОКНО ФОТО
-   ============================================================ */
 .image-modal-overlay {
   position: fixed;
   inset: 0;
@@ -1623,9 +1603,6 @@ section h2 {
   text-align: center;
 }
 
-/* ============================================================
-   КАЛЕНДАРЬ
-   ============================================================ */
 .calendar-page {
   padding: clamp(1.25rem, 3vw, 2rem) 1.5rem;
   max-width: 1400px;
@@ -1779,9 +1756,6 @@ section h2 {
   border-bottom-right-radius: var(--radius-md);
 }
 
-/* ============================================================
-   ФОРМА (contribute)
-   ============================================================ */
 .file-input {
   margin-bottom: 0.5rem;
   width: 100%;
@@ -1838,6 +1812,67 @@ section h2 {
   flex: 1;
 }
 
+.contribute-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.contribute-tab {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--border-light);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color var(--duration), border-color var(--duration), background var(--duration);
+}
+
+.contribute-tab:hover {
+  color: var(--primary-dark);
+  border-color: rgba(91, 61, 232, 0.25);
+}
+
+.contribute-tab--active {
+  background: var(--accent-bg);
+  border-color: rgba(91, 61, 232, 0.35);
+  color: var(--accent);
+}
+
+.contribute-lead {
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: -0.5rem 0 1.5rem;
+  font-size: 0.95rem;
+}
+
+.holiday-event-contribute {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.holiday-event-contribute__link {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.holiday-event-contribute__link:hover {
+  color: var(--accent-hover);
+}
+
+.file-preview-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .contribute-form .form-group { margin-bottom: 1.25rem; }
 
 .contribute-form label {
@@ -1850,6 +1885,7 @@ section h2 {
 
 .contribute-form input[type="text"],
 .contribute-form input[type="email"],
+.contribute-form input[type="date"],
 .contribute-form select,
 .contribute-form textarea {
   width: 100%;
@@ -1866,6 +1902,7 @@ section h2 {
 
 .contribute-form input[type="text"]:focus,
 .contribute-form input[type="email"]:focus,
+.contribute-form input[type="date"]:focus,
 .contribute-form select:focus,
 .contribute-form textarea:focus {
   border-color: var(--accent);
@@ -1920,9 +1957,88 @@ section h2 {
   .contribute-inline-select { width: 100%; }
 }
 
-/* ============================================================
-   AUTH / SUCCESS
-   ============================================================ */
+@keyframes captcha-shake {
+  0%, 100% { transform: translateX(0); }
+  15%, 45%, 75% { transform: translateX(-5px); }
+  30%, 60%, 90% { transform: translateX(5px); }
+}
+
+@keyframes captcha-pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.45); }
+  70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
+
+.captcha-block {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.captcha-block__label {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.captcha-block__widget {
+  min-height: 100px;
+}
+
+.captcha-widget {
+  min-height: 100px;
+}
+
+.captcha-block--error {
+  border-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.06);
+  box-shadow: 0 0 0 1px rgba(231, 76, 60, 0.15);
+}
+
+.captcha-block--error.captcha-block--shake {
+  animation: captcha-shake 0.5s ease, captcha-pulse-ring 0.8s ease;
+}
+
+.captcha-block--error .captcha-block__label {
+  color: #c0392b;
+}
+
+.captcha-block__alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #8B2020;
+  background: #FFF5F5;
+  border: 1px solid rgba(231, 76, 60, 0.35);
+  border-radius: var(--radius-sm, 8px);
+}
+
+.captcha-block__alert-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #fff;
+  background: #e74c3c;
+  border-radius: 50%;
+}
+
 .auth-error {
   color: #8B2020;
   background: #FFF5F5;
@@ -1934,20 +2050,54 @@ section h2 {
 }
 
 .contribute-success {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 3rem 1.5rem;
-  gap: 1rem;
+  padding: clamp(2rem, 6vw, 4rem) 1.5rem;
 }
 
-.contribute-success h2 { color: var(--primary-dark); }
-.contribute-success p { color: var(--text-muted); max-width: 420px; }
+.contribute-success h2 {
+  color: var(--primary-dark);
+  margin: 0 0 0.75rem;
+}
 
-/* ============================================================
-   404 NOT FOUND PAGE
-   ============================================================ */
+.contribute-success p {
+  color: var(--text-muted);
+  max-width: 480px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.success-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: 520px;
+}
+
+.success-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.page-sticky-footer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100dvh - var(--navbar-height));
+}
+
+.page-sticky-footer .site-footer {
+  margin-top: auto;
+}
+
 .not-found-page {
   flex: 1;
   display: flex;
@@ -2009,9 +2159,6 @@ section h2 {
   padding: 0.875rem 2rem;
 }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
 @media (max-width: 900px) {
   .hero-overlay {
     grid-template-columns: 1fr;
@@ -2038,14 +2185,41 @@ section h2 {
 }
 
 @media (max-width: 560px) {
-  .upcoming-card { flex-direction: column; text-align: center; }
+  .hero {
+    padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+    padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+  }
+
+  .hero-search {
+    padding-left: 0.85rem;
+    gap: 0.5rem;
+  }
+
+  .hero-search-input {
+    font-size: 1rem;
+    padding: 0.65rem 0;
+  }
+
+  .hero-search-btn {
+    width: 46px;
+    height: 46px;
+  }
+
+  .upcoming-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+  }
+
   .upcoming-icon-block { margin: 0 auto; }
   .upcoming-info { text-align: center; }
+
+  section.holidays-section {
+    padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+    padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+  }
 }
 
-/* ============================================================
-   CONSENT CHECKBOX
-   ============================================================ */
 .consent-block {
   display: flex;
   align-items: center;
@@ -2063,6 +2237,16 @@ section h2 {
 .consent-block:hover {
   border-color: var(--accent);
   background: rgba(91,61,232,0.04);
+}
+
+.consent-block--error {
+  border-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.06);
+  box-shadow: 0 0 0 1px rgba(231, 76, 60, 0.15);
+}
+
+.consent-block--error .consent-text {
+  color: #c0392b;
 }
 
 .consent-check {
@@ -2083,7 +2267,6 @@ section h2 {
   align-self: center;
 }
 
-/* Скрываем нативный чекбокс */
 .consent-checkbox {
   appearance: none;
   -webkit-appearance: none;
@@ -2114,7 +2297,6 @@ section h2 {
   box-shadow: 0 0 0 3px rgba(91,61,232,0.15);
 }
 
-/* Галочка через псевдоэлемент */
 .consent-checkbox:checked::after {
   content: '';
   position: absolute;
@@ -2151,9 +2333,6 @@ section h2 {
 
 .consent-text a:hover { color: var(--accent-hover); }
 
-/* ============================================================
-   PRIVACY PAGE
-   ============================================================ */
 .privacy-page {
   max-width: 720px;
   margin: 0 auto;
@@ -2205,14 +2384,11 @@ section h2 {
   margin-bottom: 0.2rem;
 }
 
-/* ============================================================
-   СОБЫТИЯ ПРАЗДНИКА
-   ============================================================ */
 .holiday-events {
-  margin-top: 2rem;
+  margin-top: 0.5rem;
 }
 
-.holiday-events-title {
+.holiday-events__title {
   font-family: var(--font-display);
   font-size: clamp(1.05rem, 2vw, 1.3rem);
   font-weight: 800;
@@ -2220,150 +2396,14 @@ section h2 {
   margin-bottom: 1rem;
 }
 
-.holiday-events-list {
+.holiday-events__list {
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
 }
 
-/* Карточка события */
-.event-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  background: var(--surface);
-  border: 1.5px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xs);
-  transition:
-    transform    var(--duration) var(--ease),
-    box-shadow   var(--duration) var(--ease),
-    border-color var(--duration) var(--ease);
-}
-
-.event-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-  border-color: rgba(91, 61, 232, 0.25);
-}
-
-/* Левый акцент — время / иконка */
-.event-card-accent {
+.holiday-block--skeleton .holiday-block__panel {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.2rem;
-  min-width: 52px;
-  flex-shrink: 0;
-}
-
-.event-card-time {
-  font-family: var(--font-display);
-  font-size: 0.9rem;
-  font-weight: 800;
-  color: var(--accent);
-  white-space: nowrap;
-}
-
-.event-card-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  margin-top: 0.2rem;
-  flex-shrink: 0;
-}
-
-/* Основной контент */
-.event-card-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.event-card-title {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--primary-dark);
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.event-card-desc {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  line-height: 1.55;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.event-card-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.2rem;
-}
-
-.event-card-tag {
-  background: var(--accent-bg);
-  color: var(--accent);
-  border: 1px solid rgba(91, 61, 232, 0.18);
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 0.2rem 0.65rem;
-  letter-spacing: 0.03em;
-}
-
-.event-card-location {
-  font-size: 0.8rem;
-  color: var(--text-faint);
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-/* Пустое состояние */
-.holiday-events-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2.5rem 1rem;
-  color: var(--text-faint);
-  background: var(--surface-2);
-  border-radius: var(--radius-lg);
-  border: 1.5px dashed var(--border);
-  gap: 0.5rem;
-}
-
-.holiday-events-empty p {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  max-width: 30ch;
-}
-
-@media (max-width: 560px) {
-  .event-card {
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
-  .event-card-accent {
-    flex-direction: row;
-    min-width: unset;
-    gap: 0.5rem;
-    align-items: center;
-  }
-
-  .event-card-dot { margin-top: 0; }
+  gap: 0.75rem;
 }

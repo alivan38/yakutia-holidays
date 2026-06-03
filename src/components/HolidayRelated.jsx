@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { formatDateLong, getColorByPeople, truncate } from '../constants';
+import { formatDateLong, getColorByPeople, truncate, holidayExcerpt } from '../constants';
 
 export default function HolidayRelated({ holidays }) {
   if (!holidays?.length) return null;
@@ -10,7 +10,9 @@ export default function HolidayRelated({ holidays }) {
         Вам может быть интересно
       </h2>
       <ul className="holiday-sidebar-list">
-        {holidays.map(h => (
+        {holidays.map(h => {
+          const excerpt = holidayExcerpt(h);
+          return (
           <li key={h.id}>
             <Link to={`/holiday/${h.id}`} className="holiday-sidebar-card">
               <span
@@ -24,13 +26,14 @@ export default function HolidayRelated({ holidays }) {
                 {h.date && (
                   <span className="holiday-sidebar-card-date">{formatDateLong(h.date)}</span>
                 )}
-                {h.description && (
-                  <span className="holiday-sidebar-card-desc">{truncate(h.description, 72)}</span>
+                {excerpt && (
+                  <span className="holiday-sidebar-card-desc">{truncate(excerpt, 72)}</span>
                 )}
               </span>
             </Link>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </aside>
   );

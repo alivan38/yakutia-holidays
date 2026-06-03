@@ -7,7 +7,7 @@ import multiMonthPlugin from '@fullcalendar/multimonth';
 import interactionPlugin from '@fullcalendar/interaction';
 import { useHolidays, useApprovedProposals } from '../hooks/useHolidays';
 import { mergeHolidaysAndProposals } from '../utils/mergeHolidays';
-import { getColorByPeople, MONTH_NAMES } from '../constants';
+import { getSolidColorByPeople, MONTH_NAMES } from '../constants';
 
 const MIN_YEAR = 2000;
 const MAX_YEAR = 2060;
@@ -19,10 +19,10 @@ function clampYear(year) {
   return Math.min(MAX_YEAR, Math.max(MIN_YEAR, Math.round(year)));
 }
 
-/** Месяц и день из даты каталога (год в записи не привязывает событие к одному году). */
 function parseHolidayMonthDay(dateStr) {
   if (!dateStr) return null;
-  const parts = dateStr.trim().split('-');
+  const normalized = String(dateStr).trim().match(/^(\d{4}-\d{2}-\d{2})/)?.[1] ?? dateStr.trim();
+  const parts = normalized.split('-');
   if (parts.length >= 3) {
     return { month: parts[1].padStart(2, '0'), day: parts[2].padStart(2, '0') };
   }
@@ -44,7 +44,6 @@ export default function CalendarPage() {
   const { data: holidays = [], isLoading: loadingHolidays } = useHolidays();
   const { data: approvedProposals = [], isLoading: loadingProposals } = useApprovedProposals();
   const today = new Date();
-  /** Месяц (0–11), видимый в режиме «Месяц». */
   const visibleMonthRef = useRef(today.getMonth());
   const currentYear = clampYear(today.getFullYear());
   const [viewYear, setViewYear] = useState(currentYear);
@@ -62,7 +61,7 @@ export default function CalendarPage() {
   const events = useMemo(() => allHolidays.flatMap(h => {
     const md = parseHolidayMonthDay(h.date);
     if (!md) return [];
-    const color = getColorByPeople(h.people);
+    const color = getSolidColorByPeople(h.people);
     return [{
       id: `${h.id}-${viewYear}`,
       title: h.title,

@@ -1,7 +1,6 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { NavLink } from 'react-router-dom';
 
-/** Две половины контура: от центра низа к центру верха (слева и справа). */
 function buildOutlinePaths(w, h, radius = 6) {
   if (w < 4 || h < 4) return { left: '', right: '' };
   const pad = 1;
