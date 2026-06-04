@@ -2,8 +2,9 @@ import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useHolidays, useApprovedProposals } from '../hooks/useHolidays';
 import {
-  MONTH_NAMES, getColorByPeople, truncate, formatDateShort, formatDateLong, resolveImages, getCoverImage,
+  MONTH_NAMES, getColorByPeople, truncate, formatDateShort, formatDateLong, getCoverImage, holidayExcerpt,
 } from '../constants';
+import { mergeHolidaysAndProposals } from '../utils/mergeHolidays';
 import DrumPicker from '../components/DrumPicker';
 
 const TYPEWRITER_WORDS = ['традиции', 'обряды', 'праздники'];
@@ -88,32 +89,38 @@ export default function HomePage() {
   const catalogRef = useRef(null);
   const typedWord = useTypewriter(TYPEWRITER_WORDS);
 
-  const { data: holidays = [], isLoading: loadingHolidays, isError: errorHolidays } = useHolidays();
+  const {
+    data: holidays = [],
+    isLoading: loadingHolidays,
+    isError: errorHolidays,
+    error: holidaysError,
+    refetch: refetchHolidays,
+    isFetching: fetchingHolidays,
+  } = useHolidays();
   const { data: approvedProposals = [] } = useApprovedProposals();
 
-  const allHolidays = useMemo(() => [
-    ...holidays,
-    ...approvedProposals.map(p => ({
-      id: `proposal-${p.id}`,
-      title: p.title,
-      people: p.people,
-      description: p.description,
-      fullDescription: p.description,
-      date: '',
-      tags: [],
-      images: resolveImages(p),
-      isProposal: true,
-    })),
-  ], [holidays, approvedProposals]);
+  const allHolidays = useMemo(
+    () => mergeHolidaysAndProposals(holidays, approvedProposals),
+    [holidays, approvedProposals],
+  );
 
   const allPeoples = useMemo(() => ['Все', ...new Set(allHolidays.map(h => h.people))], [allHolidays]);
   const allMonths = useMemo(() => ['Все', ...MONTH_NAMES], []);
 
   const filteredHolidays = useMemo(() => allHolidays.filter(h => {
-    const matchSearch = h.title.toLowerCase().includes(search.toLowerCase())
-      || h.description.toLowerCase().includes(search.toLowerCase());
+    const q = search.trim().toLowerCase();
+    const dateLabel = h.date ? formatDateLong(h.date).toLowerCase() : '';
+    const dateIso = h.date ? h.date.toLowerCase() : '';
+    const [, month = '', day = ''] = h.date ? h.date.split('-') : [];
+    const dateDm = month && day ? `${day}.${month}` : '';
+
+    const matchSearch = !q
+      || h.title.toLowerCase().includes(q)
+      || dateLabel.includes(q)
+      || dateIso.includes(q)
+      || dateDm.includes(q);
     const matchPeople = selectedPeople === 'Все' || h.people === selectedPeople;
-    if (!h.date) return matchSearch && matchPeople;
+    if (!h.date) return selectedMonth === 'Все' && matchSearch && matchPeople;
     const matchMonth = selectedMonth === 'Все'
       || MONTH_NAMES[parseInt(h.date.split('-')[1], 10) - 1] === selectedMonth;
     return matchSearch && matchPeople && matchMonth;
@@ -139,10 +146,8 @@ export default function HomePage() {
 
   return (
     <div className="home-page">
-      {/* ── Hero ── */}
       <section className="hero">
         <div className="hero-overlay">
-          {/* Левая колонка: заголовок */}
           <div className="hero-left">
             <h1>Праздники и обряды коренных народов Якутии</h1>
             <div className="hero-subtitle">
@@ -154,7 +159,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Правая колонка: поиск + ближайший праздник */}
           <div className="hero-right">
             <form onSubmit={handleSearchSubmit} className="hero-search">
               <svg className="hero-search-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -204,44 +208,63 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Drum-picker фильтры ── */}
       <section className="drum-section" ref={catalogRef}>
         <div className="drum-filters">
           <div className="drum-row">
-            <DrumPicker
-              items={allPeoples}
-              value={selectedPeople}
-              onChange={setSelectedPeople}
-            />
+            <div className="drum-col">
+              <DrumPicker
+                label="Народы"
+                items={allPeoples}
+                value={selectedPeople}
+                onChange={setSelectedPeople}
+              />
+            </div>
+            <div className="drum-col">
+              <DrumPicker
+                label="Месяц"
+                items={allMonths}
+                value={selectedMonth}
+                onChange={setSelectedMonth}
+              />
+            </div>
           </div>
-          <div className="drum-divider" />
-          <div className="drum-row">
-            <DrumPicker
-              items={allMonths}
-              value={selectedMonth}
-              onChange={setSelectedMonth}
-            />
+          <div className={`filter-reset-wrap${isFiltered ? ' is-visible' : ''}`}>
+            <div className="filter-reset-inner">
+              <button
+                type="button"
+                className="filter-reset-btn"
+                onClick={resetFilters}
+                tabIndex={isFiltered ? 0 : -1}
+                aria-hidden={!isFiltered}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                  <path d="M3 3v5h5"/>
+                </svg>
+                Сбросить фильтры
+              </button>
+            </div>
           </div>
-          {isFiltered && (
-            <button className="filter-reset-btn" onClick={resetFilters}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                <path d="M3 3v5h5"/>
-              </svg>
-              Сбросить фильтры
-            </button>
-          )}
         </div>
       </section>
 
-      {/* ── Каталог праздников ── */}
       <section className="holidays-section">
         <h2>Праздники народов Якутии</h2>
         <div className="holidays-preview-grid">
           {loadingHolidays ? (
             Array.from({ length: 6 }).map((_, i) => <HolidayCardSkeleton key={i} />)
           ) : errorHolidays ? (
-            <p className="no-results">⚠️ Не удалось загрузить праздники. Проверьте подключение к серверу.</p>
+            <div className="no-results holidays-load-error">
+              <p>⚠️ {holidaysError?.message || 'Не удалось загрузить праздники.'}</p>
+              <button
+                type="button"
+                className="filter-reset-btn"
+                onClick={() => refetchHolidays()}
+                disabled={fetchingHolidays}
+              >
+                {fetchingHolidays ? 'Загрузка…' : 'Повторить'}
+              </button>
+            </div>
           ) : visibleHolidays.length > 0 ? visibleHolidays.map(h => {
             const cover = getCoverImage(h);
             return (
@@ -257,19 +280,18 @@ export default function HomePage() {
                     alt={h.title}
                     loading="lazy"
                     onError={(e) => {
-                      // Если фото не загрузилось — возвращаемся к градиенту с буквой
                       e.currentTarget.parentElement.classList.remove('has-image');
                       e.currentTarget.remove();
                     }}
                   />
                 ) : (
-                  <span className="holiday-card-icon">{h.title[0]}</span>
+                  <span className="holiday-card-media-title">{h.title}</span>
                 )}
               </div>
               <div className="holiday-card-body">
                 <p className="holiday-card-people">{h.people}</p>
                 <h3 className="holiday-card-title">{h.title}</h3>
-                <p className="holiday-card-desc">{truncate(h.description, 90)}</p>
+                <p className="holiday-card-desc">{truncate(holidayExcerpt(h), 90)}</p>
                 {h.date && (
                   <div className="holiday-card-date">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
@@ -297,7 +319,6 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* ── CTA ── */}
       <section className="contribute-section">
         <div className="contribute-content">
           <h2>Знаете неизвестный праздник?</h2>
@@ -311,7 +332,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
       <footer className="site-footer">
         <div className="footer-content">
           <p>677000, Республика Саха (Якутия), г. Якутск, ул. Орджоникидзе, д. 4</p>

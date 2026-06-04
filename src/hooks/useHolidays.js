@@ -3,12 +3,20 @@ import { fetchHolidays } from '../api/holidaysApi';
 import { fetchApprovedProposals } from '../api/proposalsApi';
 import { fetchHolidayById } from '../api/holidaysApi';
 import { fetchProposalById } from '../api/proposalsApi';
-import { resolveImages } from '../constants';
+import { resolveHolidayDate, resolveImages } from '../constants';
+
+const queryRetry = (failureCount, error) => {
+  const msg = error?.message ?? '';
+  if (msg.includes('Directus') || msg.includes('недоступен')) return failureCount < 5;
+  return failureCount < 2;
+};
 
 export function useHolidays() {
   return useQuery({
     queryKey: ['holidays'],
-    queryFn: fetchHolidays,
+    queryFn: () => fetchHolidays().then(({ data }) => data),
+    retry: queryRetry,
+    retryDelay: (attempt) => Math.min(1500 * 2 ** attempt, 12000),
   });
 }
 
@@ -16,6 +24,8 @@ export function useApprovedProposals() {
   return useQuery({
     queryKey: ['proposals', 'approved'],
     queryFn: fetchApprovedProposals,
+    retry: queryRetry,
+    retryDelay: (attempt) => Math.min(1500 * 2 ** attempt, 12000),
   });
 }
 
@@ -32,7 +42,7 @@ export function useHolidayById(id) {
           ...data,
           fullDescription: data.description,
           isProposal: true,
-          date: data.date || null,
+          date: resolveHolidayDate(data) || null,
           tags: data.tags || [],
           images: resolveImages(data),
         };
@@ -41,9 +51,6 @@ export function useHolidayById(id) {
         return {
           ...data,
           images: resolveImages(data),
-          tags: Array.isArray(data.tags)
-            ? data.tags
-            : (data.tags ? data.tags.split(',').map(t => t.trim()) : []),
           fullDescription: data.full_description || data.description,
         };
       }

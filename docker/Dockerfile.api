@@ -1,0 +1,41 @@
+FROM node:22-alpine AS frontend
+
+WORKDIR /build
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY index.html vite.config.js eslint.config.js ./
+COPY public ./public
+COPY src ./src
+
+ARG VITE_API_URL=
+ARG VITE_DIRECTUS_URL=http://localhost:8055
+ARG VITE_SMARTCAPTCHA_CLIENT_KEY=
+ARG VITE_SMARTCAPTCHA_TEST=false
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_DIRECTUS_URL=$VITE_DIRECTUS_URL
+ENV VITE_SMARTCAPTCHA_CLIENT_KEY=$VITE_SMARTCAPTCHA_CLIENT_KEY
+ENV VITE_SMARTCAPTCHA_TEST=$VITE_SMARTCAPTCHA_TEST
+
+RUN npm run build
+
+FROM node:22-alpine
+
+WORKDIR /app
+
+COPY server/package.json server/package-lock.json* ./
+RUN npm ci --omit=dev 2>/dev/null || npm install --omit=dev
+
+COPY server/server.js server/validators.js server/captcha.js server/duplicateCheck.js server/setup-directus.mjs server/resolveDirectusUrl.js server/directusErrors.js server/loadDirectusToken.js server/ensure-token.mjs ./
+COPY --from=frontend /build/dist ./dist
+COPY docker/wait-directus.mjs docker/api-entrypoint.sh docker/run-setup-directus.sh docker/run-diagnose-images.sh docker/diagnose-holidays-image.mjs /docker/
+
+RUN sed -i 's/\r$//' /docker/api-entrypoint.sh /docker/run-setup-directus.sh /docker/run-diagnose-images.sh \
+  && chmod +x /docker/api-entrypoint.sh /docker/run-setup-directus.sh /docker/run-diagnose-images.sh
+
+ENV NODE_ENV=production
+ENV SERVE_STATIC=true
+EXPOSE 5000
+
+ENTRYPOINT ["/bin/sh", "/docker/api-entrypoint.sh"]

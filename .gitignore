@@ -13,9 +13,20 @@ dist
 dist-ssr
 
 .env
+.env.local
+.env.*.local
 .env.*
 !.env.example
+!.env.docker.example
 .directus_token
+
+# Directus: база и медиа только локально / в Docker volume
+directus/database/
+directus/uploads/*
+!directus/uploads/.gitkeep
+
+# Docker runtime
+api-data/
 
 *.tar
 *.tar.gz
@@ -29,10 +40,10 @@ server/uploads/*
 !server/uploads/.gitkeep
 
 /data.db
-directus/database/
-directus/database/*.db
-directus/uploads/*
-!directus/uploads/.gitkeep
+
+# Локальные скрипты проверки (не для продакшена)
+server/test-captcha.mjs
+server/test-duplicateCheck.mjs
 
 .vscode/*
 !.vscode/extensions.json
@@ -45,6 +56,5 @@ directus/uploads/*
 *.sw?
 *.local
 
-# Cursor / служебное (не код проекта)
 .cursor/
 agent-transcripts/

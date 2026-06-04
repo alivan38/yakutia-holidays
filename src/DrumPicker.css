@@ -1,43 +1,101 @@
-/* ============================================================
-   DRUM PICKER
-   ============================================================ */
 .drum-section {
   padding: 0;
   margin: 0 auto;
-  max-width: var(--content-wide);
   width: 100%;
+  max-width: min(var(--content-wide), 100%);
+  overflow-x: clip;
+  box-sizing: border-box;
 }
 
 .drum-filters {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0;
-  padding: 2rem 1.5rem 0.5rem;
+  align-items: stretch;
+  gap: 0.25rem;
+  width: 100%;
+  max-width: 100%;
+  padding: 1.5rem 1.5rem 0.25rem;
+  box-sizing: border-box;
 }
 
 .drum-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   width: 100%;
   max-width: 860px;
-  gap: 1rem;
+  min-width: 0;
+  margin: 0 auto;
+  gap: 2rem;
+  box-sizing: border-box;
+}
+
+.drum-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.dp-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.dp-label {
+  font-family: var(--font-body);
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+  text-align: center;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.dp-label-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--text-faint) 18%,
+    var(--text-faint) 82%,
+    transparent 100%
+  );
+  margin: 0.35rem 0 0.5rem;
+  flex-shrink: 0;
 }
 
 .dp-container {
   position: relative;
-  flex: 1;
-  height: 64px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 150px;
   overflow: hidden;
-  cursor: ew-resize;
   user-select: none;
+}
+
+.dp-scroll-zone {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: min(7.5rem, 72%);
+  height: 6rem;
+  z-index: 3;
+  cursor: ns-resize;
 }
 
 .dp-track {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  height: 100%;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100%;
   transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
 }
@@ -46,12 +104,18 @@
   font-family: var(--font-body);
   font-size: 1.35rem;
   font-weight: 600;
-  padding: 0 1.5rem;
+  padding: 0.35rem 0.5rem;
   white-space: nowrap;
+  text-align: center;
   color: var(--text);
   opacity: 0.2;
   cursor: pointer;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   flex-shrink: 0;
+  box-sizing: border-box;
   transition:
     opacity 400ms cubic-bezier(0.16, 1, 0.3, 1),
     color 400ms;
@@ -69,6 +133,11 @@
   font-size: 1.35rem;
 }
 
+.dp-item.dp-before {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .drum-divider {
   width: 100%;
   max-width: 860px;
@@ -84,6 +153,45 @@
   flex-shrink: 0;
 }
 
+.drum-divider-vertical {
+  width: 1px;
+  align-self: stretch;
+  min-height: 120px;
+  max-width: none;
+  margin: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--text-faint) 18%,
+    var(--text-faint) 82%,
+    transparent 100%
+  );
+}
+
+.filter-reset-wrap {
+  width: 100%;
+  max-width: 860px;
+  min-width: 0;
+  min-height: 2.25rem;
+  margin: 0.35rem auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.filter-reset-inner {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.filter-reset-wrap.is-visible .filter-reset-inner {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .filter-reset-btn {
   display: flex;
   align-items: center;
@@ -91,13 +199,12 @@
   font-family: var(--font-body);
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--scarlet-muted);
   background: none;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--scarlet-border);
   border-radius: var(--radius-full);
   padding: 0.45rem 1.1rem;
   cursor: pointer;
-  margin-top: 0.75rem;
   transition:
     background var(--duration),
     color var(--duration),
@@ -105,15 +212,56 @@
 }
 
 .filter-reset-btn:hover {
-  background: var(--accent-bg);
-  color: var(--accent);
-  border-color: var(--accent);
+  background: var(--scarlet-bg);
+  color: var(--scarlet);
+  border-color: var(--scarlet);
 }
 
-/* ============================================================
-   АДАПТИВ (только drum-picker)
-   ============================================================ */
+@media (max-width: 900px) {
+  .drum-row {
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 100%;
+  }
+
+  .drum-col {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 600px) {
-  .dp-item { font-size: 1.1rem; padding: 0 1rem; }
-  .dp-item.dp-active { font-size: 1.3rem; }
+  .drum-filters {
+    padding: 1.25rem max(0.75rem, env(safe-area-inset-left, 0px))
+      0.5rem max(0.75rem, env(safe-area-inset-right, 0px));
+  }
+
+  .dp-label { font-size: 1.2rem; }
+  .dp-container { height: 130px; }
+
+  .dp-scroll-zone {
+    width: min(6.5rem, 80%);
+  }
+
+  .drum-divider-vertical {
+    width: 100%;
+    max-width: 100%;
+    height: 1px;
+    margin: 0.2rem 0;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      var(--text-faint) 18%,
+      var(--text-faint) 82%,
+      transparent 100%
+    );
+  }
+
+  .dp-item {
+    font-size: 1.05rem;
+    padding: 0.25rem 0.35rem;
+  }
+
+  .dp-item.dp-active { font-size: 1.2rem; }
+  .dp-item.dp-adjacent { font-size: 1.05rem; }
 }
