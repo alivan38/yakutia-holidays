@@ -1,0 +1,16 @@
+node_modules
+server/node_modules
+dist
+.git
+.env
+.env.*
+!.env.example
+.directus_token
+directus/uploads/*
+!directus/uploads/.gitkeep
+directus/database/
+*.log
+backup-directus-*
+.cursor
+agent-transcripts
+doc-assets

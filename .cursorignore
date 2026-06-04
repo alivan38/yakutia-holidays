@@ -1,0 +1,14 @@
+﻿# Не индексировать для ИИ
+node_modules/
+server/node_modules/
+dist/
+directus/database/
+directus/uploads/
+.env
+.env.*
+.directus_token
+*.db
+backup-directus-*
+doc-assets/
+agent-transcripts/
+.cursor/

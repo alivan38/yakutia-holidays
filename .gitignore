@@ -1,4 +1,3 @@
-# Логи
 logs
 *.log
 npm-debug.log*
@@ -7,28 +6,34 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Зависимости
 node_modules
+server/node_modules
 
-# Сборка
 dist
 dist-ssr
 
-# Локальные переменные окружения (секреты)
 .env
 .env.*
 !.env.example
+.directus_token
 
-# Архивы (не нужны в Git)
 *.tar
 *.tar.gz
 *.zip
+*.old
+patch.json
+upload.json
+backup-directus-*
 
-# Загруженные пользователями файлы
 server/uploads/*
 !server/uploads/.gitkeep
 
-# Редакторы
+/data.db
+directus/database/
+directus/database/*.db
+directus/uploads/*
+!directus/uploads/.gitkeep
+
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -39,3 +44,7 @@ server/uploads/*
 *.sln
 *.sw?
 *.local
+
+# Cursor / служебное (не код проекта)
+.cursor/
+agent-transcripts/
