@@ -44,6 +44,7 @@ services:
       SERVE_STATIC: "true"
       DIRECTUS_URL: http://directus:8055
       DIRECTUS_TOKEN: ${DIRECTUS_TOKEN:-}
+      DIRECTUS_TOKEN_FILE: /data/directus_token
       DIRECTUS_STATIC_TOKEN: ${DIRECTUS_STATIC_TOKEN:-yakutia-docker-api-token}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@yakutia.ru}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
